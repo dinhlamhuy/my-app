@@ -57,16 +57,16 @@ function StockOutScreens() {
   const placeholderMaterinal = t('dcmMaterial_No')
   const placeholderBarcode = t('dcpBarcode')
 
+  // useEffect(() => {
+  //   // const logUser = async () => {
+  //   //   await LogUser(User_ID, 'Function: frmStock_Out()');
+  //   // };
+  //   // logUser();
+  // }, []);
   const openModal = async () => {
     await LogUser(User_ID, 'Function: frmPartial_In_Out()')
     setModalIsOpen(true)
   }
-  // useEffect(() => {
-  //   const logUser = async () => {
-  //     await LogUser(User_ID, 'Function: frmStock_Out()');
-  //   };
-  //   logUser();
-  // }, []);
   const closeModal = () => {
     setModalIsOpen(false)
   }
