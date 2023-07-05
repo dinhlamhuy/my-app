@@ -36,9 +36,13 @@ export interface  Material_Label {
     Arrival_QTY: number;
 }
 export interface ExportLIST{
+    Rack: string;
+    User_Serial_Key: string;
     Material_No: string;
+    Production: string;
     Work_Order: string;
     Supplier: string;
+    Supplier_No: string;
     Material_Name: string;
     Color: string;
     Size: string;

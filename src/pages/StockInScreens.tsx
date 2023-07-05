@@ -6,22 +6,23 @@ import QRScanner from 'components/QRScanner'
 import React, { useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { LogUser } from 'services/AuthServices'
 import { getStockInByRack, setMaterialRack, setOutRack } from 'services/StockInServices'
 import { Material_Label_By_Rack } from 'utils/Data_Stock_In'
 
 export default function StockInScreens() {
+  const { t } = useTranslation()
   const rows = document.querySelectorAll('tr')
-
   rows.forEach((row: HTMLElement) => {
     row.addEventListener('focus', () => {
       row.classList.add('bg-gray-600')
     })
-
     row.addEventListener('blur', () => {
       row.classList.remove('bg-gray-600')
     })
   })
+      const patternRack =  /^([a-zA-Z0-9]{1,3}-)?[a-zA-Z0-9]{2}$/;
   const User_ID = JSON.parse(localStorage.userData).User_ID
   const [modalIsOpen, setModalIsOpen] = useState(false)
   const [modalIsOpen2, setModalIsOpen2] = useState(false)
@@ -29,91 +30,98 @@ export default function StockInScreens() {
   const [Content, setContent] = useState<Material_Label_By_Rack[]>([])
   const [newRows, setNewRows] = useState<Material_Label_By_Rack[]>([])
   const [BtnSearch, setBtnSearch] = useState('')
+  const [TotalQuantity, setTotalQuantity] = useState(0)
+  const [TotalRoll, setTotalRoll] = useState(0)
   const [racktxt, setRacktxt] = useState('')
-  const [Qrtxt, setQrtxt] = useState('')
-
-  const handleScan = (result: any | null) => {
-    if (result) {
-      if (result.text.indexOf('-')) {
-        setRacktxt(result.text)
-        handleStockInByRack(result.text)
-        setModalIsOpen2(false)
-      } else {
-        setQrtxt(result.text)
-      }
-      setBtnSearch('')
-      console.log(result)
-    }
-  }
-
-  const handleChange = async (event: any) => {
-    const chuoi = event.target.value
-    setBtnSearch(chuoi)
-    // setLoading(true)
-    const pattern = /^[A-Za-z][0-1]?[0-1]?-[0-1][0-2]$/
-    if (chuoi.indexOf('-') && pattern.test(chuoi)) {
-      setLoading(true)
-      setRacktxt(chuoi)
-      handleStockInByRack(chuoi)
-      setBtnSearch('')
-    } else if (racktxt!=='' && (chuoi.length == 15 || chuoi.length == 16)) {
-      setLoading(true)
-      
-      const res = await setMaterialRack(chuoi, racktxt, User_ID)
-      if (res!==null) {
-        setContent((prevContent) => prevContent.concat(res))
-        setNewRows((prevNewRows) => prevNewRows.concat(res))
-      }
-    }
-    setLoading(false)
-  }
-
-  const handlePaste = async (event: React.ClipboardEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    // setBtnSearch('')
-    const clipboardData = event.clipboardData || (window as any).Clipboard
-    const pastedData = clipboardData.getData('text')
-    const pattern = /^[A-Za-z][0-1]?[0-1]?-[0-1][0-2]$/;
-    if (pastedData.indexOf('-') && pattern.test(pastedData)) {
-      // setLoading(true)
-      setRacktxt(pastedData)
-      handleStockInByRack(pastedData)
-      setBtnSearch('')
-    } else if (racktxt!=='' && (pastedData.length == 15 || pastedData.length == 16)) {
-      // setLoading(true)
-      setBtnSearch(pastedData)
-      const res = await setMaterialRack(pastedData, racktxt, User_ID)
-      if (res!==null) {
-        console.log({res})
-        setContent((prevContent) => prevContent.concat(res))
-        setNewRows((prevNewRows) => prevNewRows.concat(res))
-      }
-    }
-    setLoading(false)
-  }
-  const closeModal = () => {
-    setModalIsOpen(false)
-  }
-  const openModal = async () => {
-    // await LogUser(User_ID, 'Function: frmPartial_In_Out()')
-    setModalIsOpen(true)
-  }
-  const closeModal2 = () => {
-    setModalIsOpen2(false)
+  const placeholderMaterinal = t('dcmMaterial_No')
+  const placeholderBarcode = t('dcpBarcode')
+  const navigate = useNavigate()
+  const HandleReportStockIn = async () => {
+    await LogUser(User_ID, 'Function: frmReport_Stock_In()')
+    navigate('/reportstockin')
   }
   const openModal2 = async () => {
     // await LogUser(User_ID, 'Function: frmPartial_In_Out()')
     setModalIsOpen2(true)
   }
+
+
+  const handleScan = (result: any | null) => {
+    if (result) {
+      // console.log(result)
+      handleSubmitBtnSearch(result.text)
+      // setModalIsOpen2(false)
+    }
+  }
+
+  const handleChange = (event: any) => {
+    const chuoi = event.target.value
+    setBtnSearch(chuoi)
+    handleSubmitBtnSearch(chuoi)
+  }
+
+  const handlePaste =  (event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    const clipboardData = event.clipboardData || (window as any).Clipboard
+    const pastedData = clipboardData.getData('text')
+    setBtnSearch(pastedData)
+    handleSubmitBtnSearch(pastedData)
+  }
+
+  // submit chuỗi ở ô quét
+  const handleSubmitBtnSearch=(Str:string )=>{
+    if (Str.indexOf('-') !== -1 && patternRack.test(Str) && (Str.length === 5 || Str.length === 6)) {
+      // setLoading(true)
+     
+      handleStockInByRack(Str)
+      
+    } else if (racktxt!=='' && (Str.length == 15 || Str.length == 16)) {
+      console.log('bkla bla');
+      handlesetMaterialRack(Str, racktxt)
+    }
+    // setLoading(false)
+  }
+
+  // Select ra danh sách vật tư theo Rack
   const handleStockInByRack = async (rack: string) => {
+    setModalIsOpen2(false)
     setLoading(true)
     if (rack !== '') {
       const res = await getStockInByRack(rack)
-      // console.log(res)
-      setContent(res)
+      setRacktxt(rack)
+      if(res!==null){
+        setContent(res)
+    
+      }else{
+        setContent([])
+        
+      }
+      setBtnSearch('')
     }
     setLoading(false)
   }
+  //Nhập vật tư bằng mã BarCode vào Rack
+  const handlesetMaterialRack = async (BarCode:string , Rack:string) => {
+    setLoading(true)
+    setBtnSearch(BarCode)
+    const res = await setMaterialRack(BarCode, Rack, User_ID)
+    if (res!==null) {
+      // console.log({res})
+      if (!Content.some(row => row.BarCode === res.BarCode)) {
+        setContent((prevContent) => [res, ...prevContent])
+        setNewRows((prevNewRows) => prevNewRows.concat(res))
+          const updatedTotalQuantity = (TotalQuantity + Number(res.QTY)).toFixed(2);
+            const updatedTotalRoll = (TotalRoll + Number(res.Roll)).toFixed(2);
+            setTotalQuantity(Number(updatedTotalQuantity));
+            setTotalRoll(Number(updatedTotalRoll));
+            setModalIsOpen2(false)
+      }
+    }
+    // setModalIsOpen2(true)
+
+    setLoading(false)
+  }
+
 
   const HandleOutRack = async (BarCode: string) => {
     // setOutRack(qr)
@@ -122,14 +130,25 @@ export default function StockInScreens() {
       const res = await setOutRack(BarCode, User_ID)
       if(res!==null){
         console.log(res)
+        if (newRows.some((row) => row.BarCode === BarCode)) {
+          const existingRow = newRows.find((row) => row.BarCode === BarCode);
+          if (existingRow) {
+            const updatedTotalQuantity = (TotalQuantity - Number(existingRow.QTY)).toFixed(2);
+            const updatedTotalRoll = (TotalRoll - Number(existingRow.Roll)).toFixed(2);
+            setTotalQuantity(Number(updatedTotalQuantity));
+            setTotalRoll(Number(updatedTotalRoll));
+            // setTotalQuantity(updatedTotalQuantity);
+          }
+        }
         setContent((prevData) => prevData.filter((item) => item.BarCode !== BarCode))
 
       }
     }
   }
+
   // const totalQty = Content.reduce((accumulator, row) => accumulator + row.QTY, 0);
   // const totalRoll = Content.reduce((accumulator, row) => accumulator + row.Roll, 0);
-  const { t } = useTranslation()
+
   return (
     <main className=' flex h-screen flex-col  text-white'>
       <Helmet>
@@ -167,7 +186,7 @@ export default function StockInScreens() {
               </p>
             </div>
             <div className='mx-2 text-center  font-bold' style={{ width: '30px' }}>
-              <Link to='/reportstockin'>
+              <button  onClick={HandleReportStockIn} >
                 <svg
                   className='text-bold text-white'
                   strokeLinecap='round'
@@ -184,7 +203,7 @@ export default function StockInScreens() {
                     d='M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'
                   ></path>
                 </svg>
-              </Link>
+              </button>
             </div>
           </div>
           {/* navbar  */}
@@ -196,7 +215,7 @@ export default function StockInScreens() {
                   htmlFor='chedo'
                   className=' text-xs sm:text-xs  md:text-base md:text-sm  md:text-sm lg:text-base xl:text-base'
                 >
-                  <input type='checkbox' id='chedo' onClick={openModal2} />
+                  <input type='checkbox' id='chedo' onClick={(openModal2)} />
                   &ensp;{t('gpbMode')}
                 </label>
               </div>
@@ -232,7 +251,7 @@ export default function StockInScreens() {
                       type='text'
                       value={BtnSearch}
                       // onChange={(e) => setBtnSearch(e.target.value)}
-                      // placeholder={placeholderBarcode}
+                      placeholder={placeholderBarcode}
                       onChange={handleChange}
                       onPaste={handlePaste}
                       maxLength={16}
@@ -242,7 +261,8 @@ export default function StockInScreens() {
                 </div>
                 <div>
                   <div className='w-full text-xs md:my-2  md:text-sm lg:text-base  '>
-                    {t('lblQty_Out')}
+                    {t('lblQty_Scan')}
+                    {TotalQuantity} &#10098; Cuộn: {TotalRoll} &#10099;
                     {/* {(Content.reduce((accumulator, row) => accumulator + Number(row.QTY), 0) ||0).toFixed(2)}
                     &#10098;Cuộn {(Content.reduce((accumulator, roww) => accumulator + Number(roww.Roll), 0) || 0).toFixed(2)}&#10099; */}
                   </div>
@@ -395,10 +415,10 @@ export default function StockInScreens() {
         </table>
       </div>
 
-      <CustomModal isOpen={modalIsOpen} onClose={closeModal}>
+      <CustomModal isOpen={modalIsOpen} onClose={()=> setModalIsOpen(false)}>
         <div></div>
       </CustomModal>
-      <CustomModal2 isOpen={modalIsOpen2} onClose={closeModal2}>
+      <CustomModal2 isOpen={modalIsOpen2} onClose={()=>setModalIsOpen2(false)}>
         <div>
           <QRScanner onScan={handleScan} />
           <button>&#8689;</button>

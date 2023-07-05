@@ -9,7 +9,7 @@ import * as XLSX from 'xlsx'
 import moment from 'moment'
 import { LogUser } from 'services/AuthServices'
 
-export const ExportList = () => {
+export const ExportListOut = () => {
   const User_ID = JSON.parse(localStorage.userData).User_ID
 
   useEffect(() => {
@@ -22,8 +22,12 @@ export const ExportList = () => {
     Material_No: '',
     Work_Order: '',
     Supplier: '',
+    Supplier_No: '',
     Material_Name: '',
     Color: '',
+    Rack: '',
+    User_Serial_Key: '',
+    Production: '',
     Size: '',
     QTY: 0,
     Order_No: '',
@@ -44,7 +48,7 @@ export const ExportList = () => {
   const [Message, setMessage] = useState('')
 
   const handlSearch = async () => {
-    const res = await searchExportList(OrderNo, MaterialNo, Supplier, DateStart, DateEnd)
+    const res = await searchExportList('Out',OrderNo, MaterialNo, Supplier, DateStart, DateEnd)
     console.log({ res })
     setListExport(res)
   }

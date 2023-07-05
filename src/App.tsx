@@ -13,9 +13,10 @@ import './i18n/i18n'
 import { RegisterScreen } from 'pages/RegisterScreens'
 import { ExportLanguge } from 'pages/ExportLanguge'
 import ModalCha from 'components/ModalCha'
-import { ExportList } from 'pages/ExportList'
+import { ExportListOut } from 'pages/ExportListOut'
 import CustomSidleBar from 'components/CustomSidleBar'
 import StockInScreens from 'pages/StockInScreens'
+import { ExportListIn } from 'pages/ExportListIn'
 
 function App() {
   return (
@@ -35,7 +36,8 @@ function App() {
           </Route>
           <Route path={'/*'} element={<ErrorPage />} />
           {/* <Route path={'/exportlanguage'} element={<ExportLanguge />} /> */}
-          <Route path={'/reportstockout'} element={<ExportList />} />
+          <Route path={'/reportstockout'} element={<ExportListOut />} />
+          <Route path={'/reportstockin'} element={<ExportListIn />} />
           <Route path={'/CustomSidleBar'} element={<CustomSidleBar />} />
           <Route path={'/modal'} element={<ModalCha />} />
 

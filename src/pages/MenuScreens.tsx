@@ -8,23 +8,41 @@ import { selectuser } from 'store/authSelectors'
 import { ChangeLanguageservice } from 'services/languageServices'
 import i18n from 'i18n/i18n'
 import CustomModal from 'components/CustomModal2'
+import CustomModalPass from 'components/CustomModalPass'
 import { LogUser } from 'services/AuthServices'
 import { useNavigate } from 'react-router-dom'
-
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 const MenuScreens = () => {
   const { t } = useTranslation()
   // const userData = useSelector((state: RootState) => state.account.user);
   const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [modalIsOpenPass, setModalIsOpenPass] = useState(false)
+
   const userDataJSON = localStorage.getItem('userData')
   const userDatas = userDataJSON ? JSON.parse(userDataJSON) : ''
+  const [oldpassword, setOldPassword] = useState('')
+  const [newpassword, setNewPassword] = useState('')
+  const [repassword, setRePassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
   const navigate = useNavigate()
   const openModal = async () => {
     setModalIsOpen(true)
     await LogUser(userDatas.User_ID, 'Function: frmLanguages()')
   }
+  const openModalPass = async () => {
+    setModalIsOpenPass(true)
+    await LogUser(userDatas.User_ID, 'Function: frmForm_Change_Pass()')
+  }
 
   const closeModal = () => {
     setModalIsOpen(false)
+  }
+  const closeModalPass = () => {
+    setModalIsOpenPass(false)
   }
   const handleLogout = async () => {
     const langs = t('msgLeaving')
@@ -41,6 +59,10 @@ const MenuScreens = () => {
     // window.location.href = '/stock-out'
 
     navigate('/stock-out')
+  }
+  const HandleStockIn = async () => {
+    await LogUser(userDatas.User_ID, 'Function: frmStock_In()')
+    navigate('/stock-in')
   }
 
   const changeLanguage = async (lng: 'EN' | 'VN' | 'TW' | 'MM') => {
@@ -63,10 +85,10 @@ const MenuScreens = () => {
       </Helmet>
       <div className=' grid min-h-full  grid-cols-2 flex-col  justify-center py-4 sm:grid-cols-3 '>
         <div className='mx-auto my-auto  grid grid-rows-1 '>
-          <Link
-            to='/stock-in'
+          <button
+            onClick={HandleStockIn}
             className=' buttonMenuStockIn mx-auto  rounded-2xl  bg-white  drop-shadow-md    hover:opacity-75 '
-          ></Link>
+          ></button>
 
           <label className='mt-1 text-center font-medium text-white'>{t('btnStock_In')}</label>
         </div>
@@ -79,10 +101,10 @@ const MenuScreens = () => {
           <label className='mt-1 text-center font-medium text-white'>{t('btnStock_Out')}</label>
         </div>
         <div className='mx-auto my-auto grid grid-rows-1  '>
-          <Link
-            to='/'
+          <button
+            onClick={openModalPass}
             className=' buttonMenuPassword mx-auto  rounded-2xl  bg-white drop-shadow-md   hover:opacity-75'
-          />
+          ></button>
 
           <label className='mt-1 text-center font-medium text-white'>{t('btnChangepassword')}</label>
         </div>
@@ -102,11 +124,7 @@ const MenuScreens = () => {
         </div>
       </div>
 
-      <CustomModal
-        isOpen={modalIsOpen}
-        onClose={closeModal}
-       
-      >
+      <CustomModal isOpen={modalIsOpen} onClose={closeModal}>
         <div className='mx-auto grid h-full w-full max-w-sm  grid-cols-2 md:grid-cols-4  '>
           <div
             className=' col-span-2 text-center text-2xl font-bold tracking-tight text-white md:col-span-4'
@@ -152,16 +170,79 @@ const MenuScreens = () => {
             </button>
           </div>
         </div>
-
         <div className=' w-full text-center '>
           <button
             onClick={closeModal}
-            className='mx-auto rounded-lg text-white hover:outline  px-10 py-2 font-bold hover:bg-teal-700 drop-shadow-md  hover:drop-shadow-xl'
+            className='mx-auto rounded-lg px-10 py-2  font-bold text-white drop-shadow-md hover:bg-teal-700 hover:outline  hover:drop-shadow-xl'
           >
             {t('btnExit')}
           </button>
         </div>
       </CustomModal>
+      {/* Change password */}
+      <CustomModalPass isOpen={modalIsOpenPass} onClose={closeModalPass}>
+        <div className='mx-auto grid h-full w-full max-w-sm  grid-cols-1  '>
+          <div className='text-center text-2xl font-bold tracking-tight text-white ' style={{ fontSize: '30px' }}>
+            {t('btnChangepassword')}!
+          </div>
+          <div className=' relative font-bold tracking-tight text-white' style={{ fontSize: '30px' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder='Mật khẩu cũ'
+              className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
+            />
+            <button
+              type='button'
+              className='absolute inset-y-0 right-0 -top-5 flex cursor-pointer items-center pr-3'
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+            </button>
+          </div>
+          <div className=' relative font-bold tracking-tight text-white' style={{ fontSize: '30px' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder='Mật khẩu mới'
+              className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
+            />
+            <button
+              type='button'
+              className='absolute inset-y-0 right-0 -top-5 flex cursor-pointer items-center pr-3'
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+            </button>
+          </div>
+          <div className=' relative font-bold tracking-tight text-white' style={{ fontSize: '30px' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder='Nhập lại mật khẩu mới'
+              className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
+            />
+            <button
+              type='button'
+              className='absolute inset-y-0 right-0 -top-5 flex cursor-pointer items-center pr-3'
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+            </button>
+          </div>
+        </div>
+        <div className=' w-full text-center my-3'>
+          <button
+            // onClick={closeModal}
+            className='mx-auto rounded-lg px-10 py-2  font-bold text-white drop-shadow-md hover:bg-green-700 hover:outline  hover:drop-shadow-xl'
+          >
+            {t('btnChangepassword')}
+          </button>
+          <button
+            onClick={closeModal}
+            className='mx-auto rounded-lg px-10 py-2  font-bold text-white drop-shadow-md hover:bg-teal-700 hover:outline  hover:drop-shadow-xl'
+          >
+            {t('btnExit')}
+          </button>
+        </div>
+      </CustomModalPass>
     </div>
   )
 }

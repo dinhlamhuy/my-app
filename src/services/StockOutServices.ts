@@ -80,9 +80,10 @@ export const searchMaterialNo = async (Material_No: string, Date_Start: string, 
   }
 } 
 
-export const searchExportList = async (Order_No:string, Material_No: string, Supplier: string, Date_Start: string, Date_End:string) => {
+export const searchExportList = async (Status:string,Order_No:string, Material_No: string, Supplier: string, Date_Start: string, Date_End:string) => {
   try {
     var obj = {
+      Status:Status,
       Order_No : Order_No,
       Material_No : Material_No,
       Supplier : Supplier,

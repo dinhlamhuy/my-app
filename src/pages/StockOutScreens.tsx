@@ -1,7 +1,7 @@
 import CustomModal from 'components/CustomModal'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ReBackstockOutAll, getMaterial, searchMaterialNo, stockOutAll, stockOutTSL } from 'services/StockOutServices'
 import { Material_Label, Stock_Out } from 'utils/Data_Stock_In_Out'
 import i18n from 'i18n/i18n'
@@ -56,13 +56,11 @@ function StockOutScreens() {
   const [DateEnd, setDateEnd] = useState(currentDate)
   const placeholderMaterinal = t('dcmMaterial_No')
   const placeholderBarcode = t('dcpBarcode')
-
-  // useEffect(() => {
-  //   // const logUser = async () => {
-  //   //   await LogUser(User_ID, 'Function: frmStock_Out()');
-  //   // };
-  //   // logUser();
-  // }, []);
+  const navigate = useNavigate()
+  const HandleReportStockOut = async () => {
+    await LogUser(User_ID, 'Function: frmReport_Stock_Out()')
+    navigate('/reportstockout')
+  }
   const openModal = async () => {
     await LogUser(User_ID, 'Function: frmPartial_In_Out()')
     setModalIsOpen(true)
@@ -260,7 +258,7 @@ function StockOutScreens() {
             </p>
           </div>
           <div className='  mx-2 text-center  font-bold' style={{ width: '30px' }}>
-            <Link to='/reportstockout'>
+            <button onClick={HandleReportStockOut}>
               <svg
                 className='text-bold text-white'
                 strokeLinecap='round'
@@ -277,7 +275,7 @@ function StockOutScreens() {
                   d='M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'
                 ></path>
               </svg>
-            </Link>
+            </button>
           </div>
         </div>
         {/* navbar  */}
@@ -316,7 +314,7 @@ function StockOutScreens() {
                     onChange={handleChange}
                     onPaste={handlePaste}
                     maxLength={16}
-                    className='border-1 w-full rounded-full bg-transparent px-1 py-1 text-xs text-white outline outline-1 outline-white md:py-0  md:text-sm lg:w-fit lg:text-base'
+                    className='border-1 w-full rounded-full bg-[#1c2437] px-1 py-1 text-xs text-white outline outline-1 outline-white md:py-0  md:text-sm lg:w-fit lg:text-base'
                   />
                 </label>
                 {loading ? (
