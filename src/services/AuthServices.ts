@@ -44,6 +44,27 @@ export const Registerservice = async (User_ID: string, Password: string, User_Na
   }
 };
 
+export const ChangePassservice = async (User_ID: string, OldPassword:string, NewPassword:string ) => {
+  // const passmd5 = Md5.hashStr(Password);
+  try {
+    const IPv4=await internalIpV4()
+    const obj = {
+      User_ID: User_ID,
+      NewPassword:Md5.hashStr(NewPassword),
+      OldPassword:Md5.hashStr(OldPassword),
+      // IP4_Address:IPv4
+    }
+    return axios.post('changepassword', obj).then((response: any) => {
+      //console.log("Kết quả trả về" , response)
+      return response;
+    });
+    
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const LogUser= async(User_ID: string,Program_Log: string)=>{
   try{
     const IPv4=await internalIpV4()

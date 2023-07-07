@@ -18,7 +18,7 @@ export const ChangeLanguageservice = async (lang: string) => {
       User_ID: JSON.parse(localStorage.userData).User_ID,
       TLLanguage:lang
     }
-    return axios.post('changePW',  obj ).then((response: any) => {
+    return axios.post('changeLang',  obj ).then((response: any) => {
       console.log(response);
       return response;
     });

@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { searchExportList } from 'services/StockOutServices'
 import { ExportLIST } from 'utils/Data_Stock_In_Out'
 import { saveAs } from 'file-saver'
 import * as XLSX from 'xlsx'
 import moment from 'moment'
 import { LogUser } from 'services/AuthServices'
+import { searchExportInList } from 'services/StockInServices'
 
 export const ExportListIn = () => {
   const User_ID = JSON.parse(localStorage.userData).User_ID
@@ -43,7 +43,7 @@ export const ExportListIn = () => {
   const [Message, setMessage] = useState('')
 
   const handlSearch = async () => {
-    const res = await searchExportList('In',OrderNo, MaterialNo, Supplier, DateStart, DateEnd)
+    const res = await searchExportInList('In',OrderNo, MaterialNo, Supplier, DateStart, DateEnd)
     console.log({ res })
     setListExport(res)
   }
@@ -175,7 +175,7 @@ export const ExportListIn = () => {
           <div className='1  mt-2 grid   grid-cols-1 md:grid-cols-2'>
             <div className='grid w-full grid-rows-2  gap-2 pr-3 md:gap-4 md:text-right'>
               <div>
-                Số phiếu&emsp;
+               {t('dcmOrder_No')}&emsp;
                 <input
                   type='text'
                   value={OrderNo}
@@ -185,7 +185,7 @@ export const ExportListIn = () => {
                 />
               </div>
               <div>
-                Mã vật tư&emsp;
+                {t('dcmMaterial_No')}&emsp;
                 <input
                   type='text'
                   value={MaterialNo}
@@ -197,7 +197,7 @@ export const ExportListIn = () => {
             </div>
             <div className='grid w-full grid-rows-1 pt-2  text-left md:grid-rows-2 md:gap-4 md:pl-3 md:pt-0'>
               <div>
-                Nhà cung ứng&emsp;
+                {t('dcpSupplier')}&emsp;
                 <select
                   style={{ backgroundColor: '#1c2437' }}
                   className='border-1 w-36 rounded-full px-2 text-white outline outline-1 outline-white'
@@ -238,7 +238,7 @@ export const ExportListIn = () => {
                 onClick={handlSearch}
                 className='rounded-xl border bg-gray-700 px-3  py-1 text-xs font-bold md:text-sm  lg:text-base'
               >
-                Tìm kiếm
+                {t('btnSearch')}
               </button>
             </div>
             <div className=''>
@@ -246,12 +246,12 @@ export const ExportListIn = () => {
                 onClick={exportToExcel}
                 className='rounded-xl border bg-gray-700 px-3 py-1 text-xs font-bold md:text-sm  lg:text-base'
               >
-                Xuất excel
+                {t('btnExcel')}
               </button>
             </div>
             <div className=' text-left'>
               <button onClick={handleReset} className='rounded-xl border bg-gray-700 px-3  py-1 text-xs font-bold md:text-sm  lg:text-base'>
-                Làm mới
+                {t('btnRemove')}
               </button>
             </div>
             <div></div>

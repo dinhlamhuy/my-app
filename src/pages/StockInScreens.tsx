@@ -6,6 +6,7 @@ import QRScanner from 'components/QRScanner'
 import React, { useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
+import { AiFillCamera, AiOutlineFileSearch } from 'react-icons/ai'
 import { Link, useNavigate } from 'react-router-dom'
 import { LogUser } from 'services/AuthServices'
 import { getStockInByRack, setMaterialRack, setOutRack } from 'services/StockInServices'
@@ -31,6 +32,8 @@ export default function StockInScreens() {
   const [newRows, setNewRows] = useState<Material_Label_By_Rack[]>([])
   const [BtnSearch, setBtnSearch] = useState('')
   const [TotalQuantity, setTotalQuantity] = useState(0)
+  const [TotalQuantityRack, setTotalQuantityRack] = useState(0)
+  const [TotalRollRack, setTotalRollRack] = useState(0)
   const [TotalRoll, setTotalRoll] = useState(0)
   const [racktxt, setRacktxt] = useState('')
   const placeholderMaterinal = t('dcmMaterial_No')
@@ -41,16 +44,18 @@ export default function StockInScreens() {
     navigate('/reportstockin')
   }
   const openModal2 = async () => {
-    // await LogUser(User_ID, 'Function: frmPartial_In_Out()')
     setModalIsOpen2(true)
   }
 
 
-  const handleScan = (result: any | null) => {
+  const handleScan = async (result: any | null) => {
     if (result) {
-      // console.log(result)
-      handleSubmitBtnSearch(result.text)
       // setModalIsOpen2(false)
+
+      await handleSubmitBtnSearch(result.text)
+      // if (racktxt!=='' && (result.text.length == 15 || result.text.length == 16)) {
+        // setModalIsOpen2(true)
+      // }
     }
   }
 
@@ -76,7 +81,7 @@ export default function StockInScreens() {
       handleStockInByRack(Str)
       
     } else if (racktxt!=='' && (Str.length == 15 || Str.length == 16)) {
-      console.log('bkla bla');
+      // console.log('bkla bla');
       handlesetMaterialRack(Str, racktxt)
     }
     // setLoading(false)
@@ -88,14 +93,19 @@ export default function StockInScreens() {
     setLoading(true)
     if (rack !== '') {
       const res = await getStockInByRack(rack)
-      setRacktxt(rack)
-      if(res!==null){
+      if(res!==null && res!=='EmptyRacks'){
+        // setContent([])
+        setRacktxt(rack)
         setContent(res)
-    
-      }else{
+        setTotalQuantityRack((res.reduce((accumulator:number, row:any) => accumulator + Number(row.QTY), 0) || 0).toFixed(2));
+        setTotalRollRack((res.reduce((accumulator:number, row:any) => accumulator + Number(row.Roll), 0) || 0).toFixed(2));
+      }else if(res===null){
         setContent([])
-        
+        setRacktxt(rack)
+         setTotalQuantityRack(0)
+        setTotalRollRack(0)
       }
+
       setBtnSearch('')
     }
     setLoading(false)
@@ -106,7 +116,7 @@ export default function StockInScreens() {
     setBtnSearch(BarCode)
     const res = await setMaterialRack(BarCode, Rack, User_ID)
     if (res!==null) {
-      // console.log({res})
+      setBtnSearch('')
       if (!Content.some(row => row.BarCode === res.BarCode)) {
         setContent((prevContent) => [res, ...prevContent])
         setNewRows((prevNewRows) => prevNewRows.concat(res))
@@ -114,10 +124,10 @@ export default function StockInScreens() {
             const updatedTotalRoll = (TotalRoll + Number(res.Roll)).toFixed(2);
             setTotalQuantity(Number(updatedTotalQuantity));
             setTotalRoll(Number(updatedTotalRoll));
-            setModalIsOpen2(false)
+            // setModalIsOpen2(false)
       }
     }
-    // setModalIsOpen2(true)
+
 
     setLoading(false)
   }
@@ -125,7 +135,7 @@ export default function StockInScreens() {
 
   const HandleOutRack = async (BarCode: string) => {
     // setOutRack(qr)
-    const confirmed = window.confirm('Bạn muốn xuất vật tư ra khỏi kệ')
+    const confirmed = window.confirm('You want to cancel this item: '+ BarCode)
     if (confirmed) {
       const res = await setOutRack(BarCode, User_ID)
       if(res!==null){
@@ -182,27 +192,12 @@ export default function StockInScreens() {
 
             <div>
               <p className='md:px32 border-b px-24 text-center   align-middle text-2xl font-bold text-white sm:px-28 '>
-                {t('tsmStock_In')}
+                {t('tsmStock_In')} <button className='p-0'  onClick={openModal2}><AiFillCamera /></button>
               </p>
             </div>
             <div className='mx-2 text-center  font-bold' style={{ width: '30px' }}>
-              <button  onClick={HandleReportStockIn} >
-                <svg
-                  className='text-bold text-white'
-                  strokeLinecap='round'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='1.5'
-                  viewBox='0 0 24 24'
-                  xmlns='http://www.w3.org/2000/svg'
-                  aria-hidden='true'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    d='M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'
-                  ></path>
-                </svg>
+              <button  onClick={HandleReportStockIn} className='text-2xl' >
+               <AiOutlineFileSearch />
               </button>
             </div>
           </div>
@@ -215,7 +210,7 @@ export default function StockInScreens() {
                   htmlFor='chedo'
                   className=' text-xs sm:text-xs  md:text-base md:text-sm  md:text-sm lg:text-base xl:text-base'
                 >
-                  <input type='checkbox' id='chedo' onClick={(openModal2)} />
+                  <input type='checkbox' id='chedo' onClick={openModal2} />
                   &ensp;{t('gpbMode')}
                 </label>
               </div>
@@ -236,9 +231,9 @@ export default function StockInScreens() {
                   {' '}
                   <div className='  w-full text-xs md:my-2  md:text-sm lg:text-base '>
                     {t('lblQty_In')}
-                    {(Content.reduce((accumulator, row) => accumulator + Number(row.QTY), 0) || 0).toFixed(2)}
-                    &#10098;Cuộn{' '}
-                    {(Content.reduce((accumulator, roww) => accumulator + Number(roww.Roll), 0) || 0).toFixed(2)}
+                    {TotalQuantityRack}
+                    &#10098;{t('dcmRoll')}:
+                    {TotalRollRack}
                     &#10099;
                   </div>
                 </div>
@@ -262,7 +257,7 @@ export default function StockInScreens() {
                 <div>
                   <div className='w-full text-xs md:my-2  md:text-sm lg:text-base  '>
                     {t('lblQty_Scan')}
-                    {TotalQuantity} &#10098; Cuộn: {TotalRoll} &#10099;
+                    {TotalQuantity} &#10098; {t('dcmRoll')}: {TotalRoll} &#10099;
                     {/* {(Content.reduce((accumulator, row) => accumulator + Number(row.QTY), 0) ||0).toFixed(2)}
                     &#10098;Cuộn {(Content.reduce((accumulator, roww) => accumulator + Number(roww.Roll), 0) || 0).toFixed(2)}&#10099; */}
                   </div>
@@ -275,17 +270,17 @@ export default function StockInScreens() {
                 <div></div>
                 <div>
                   <button className='w-full rounded-full bg-gray-500 p-2 outline outline-1' disabled>
-                    Nhập kho ERP
+                    {t('btnEnter_Stock')} ERP
                   </button>
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-gray-500 p-2 outline outline-1' disabled>
-                    Xuất kho ERP
+                    {t('lblInfor_In_Out')} ERP
                   </button>
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-[#141c30] p-2 outline outline-1 hover:opacity-75'>
-                    Nhập kệ ERP
+                    {t('btnEnter_Shelves')}
                   </button>
                 </div>
                 <div></div>
@@ -293,27 +288,27 @@ export default function StockInScreens() {
               <div className='leading-2  mx-auto grid w-full grid-cols-5 gap-2'>
                 <div>
                   <button className='w-full rounded-full bg-[#141c30] p-2 outline outline-1 hover:opacity-75'>
-                    Thông tin
+                    {t('gbxInformation')}
                   </button>
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-[#141c30] p-2 outline outline-1 hover:opacity-75'>
-                    Thống kê
+                    {t('btnStatistical')}
                   </button>
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-[#141c30] p-2 outline outline-1 hover:opacity-75'>
-                    Kiểm kê
+                    {t('btnInventory')}
                   </button>
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-[#141c30] p-2 outline outline-1 hover:opacity-75'>
-                    QC
+                 QC
                   </button>
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-gray-500 p-2 outline outline-1' disabled>
-                    Nhập kho
+                    {t('btnEnter_Stock')}
                   </button>
                 </div>
               </div>

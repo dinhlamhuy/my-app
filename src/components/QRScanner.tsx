@@ -11,11 +11,14 @@ interface ScannerQRProps {
 const QRScanner: React.FC<ScannerQRProps> = ({ onScan }) => {
 
 
-  const handleScan = (data: any | null) => {
-    if (data) {
-      onScan(data)
-    }
+  const [scannerKey, setScannerKey] = useState(0); // Khởi tạo state cho key của component QrScanner
+
+const handleScan = (data: any | null) => {
+  if (data) {
+    onScan(data);
+    setScannerKey(prevKey => prevKey + 1); // Thay đổi giá trị key của component QrScanner
   }
+}
   const closeModal = () => {
     setModalIsOpen(false)
   }
@@ -30,7 +33,7 @@ const QRScanner: React.FC<ScannerQRProps> = ({ onScan }) => {
   return (
     <div>
      
-            <QrScanner delay={300} onError={handleError} onScan={handleScan} style={{ width: '80%', margin:"auto" }} />
+            <QrScanner  key={scannerKey}  delay={300} onError={handleError} onScan={handleScan} style={{ width: '80%', margin:"auto" }} />
            
     </div>
   )

@@ -7,12 +7,10 @@ import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { AppDispatch } from 'store'
 import { ReactComponent as LoadingIcon } from '../assets/img/loading.svg'
-
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 import { login } from 'store/authSlice'
 import { Helmet } from 'react-helmet'
 import { LogUser } from 'services/AuthServices'
-
-
 
 function Login() {
   const { t, i18n } = useTranslation()
@@ -22,7 +20,10 @@ function Login() {
   //coMMent đoạn dịch văn bản
   const placeholderUserID = t('dcmUser_ID')
   const placeholderPass = t('lblPassword')
-  
+  const [showPassword, setShowPassword] = useState(false)
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
   const [isLoading, setisLoading] = useState(false)
   const [inputUserid, setInputUserid] = useState('')
   const [inputPass, setInputPass] = useState('')
@@ -42,43 +43,47 @@ function Login() {
   const handleLogin = async () => {
     setisLoading(true)
     setMessage('')
-    if(inputUserid !== '' || inputPass !== ''){
+    if (inputUserid !== '' || inputPass !== '') {
       await dispatch(login({ User_ID: inputUserid, Password: inputPass }))
         .unwrap()
-        .then(async(userData: any) => {
-          console.log('Logged in:', userData)
+        .then(async (userData: any) => {
+          // console.log('Logged in:', userData)
           if (userData.Data) {
-            await LogUser(inputUserid, 'Function: LoginProcedure()');
-            localStorage.setItem('userData', JSON.stringify(userData.Data));
-            setMessage('Đăng nhập thành công')
+            await LogUser(inputUserid, 'Function: LoginProcedure()')
+            localStorage.setItem('userData', JSON.stringify(userData.Data))
+            const txxt=t('loginsuccess')
+            setMessage(txxt)
             window.location.href = '/'
           } else {
-            setMessage(userData.Message)
+            var txt = ''
+            if (userData.Message === 2 ) {
+              txt = t('msgNotCorrect')
+            } else if (userData.Message === 3) {
+              txt = t('msgNotCorrect')
+            }
+            setMessage(txt)
           }
           setisLoading(false)
         })
         .catch((error: any) => {
           console.error('Login failed:', error)
         })
-
-    }else{
-      setMessage('Không được để trống');
+    } else {
+      const text = t('msgCompleteInformation')
+      setMessage(text)
       setisLoading(false)
-
     }
   }
 
   return (
-    <div className='h-screen w-screen bgLogin'>
+    <div className='bgLogin h-screen w-screen'>
       <Helmet>
-      <title>{t('btnLogin')} - WareHouse</title>
+        <title>{t('btnLogin')} - WareHouse</title>
       </Helmet>
       <div className='  flex  min-h-full flex-col justify-center '>
-        <div className='sm:mx-18 mx-14 rounded-md border bgcontentLogin  px-8 py-12 drop-shadow-lg sm:px-6 md:mx-32  md:px-12 lg:mx-64 lg:px-20 xl:mx-96 xl:px-28 '>
+        <div className='sm:mx-18 bgcontentLogin mx-14 rounded-md border  px-8 py-12 drop-shadow-lg sm:px-6 md:mx-32  md:px-12 lg:mx-64 lg:px-20 xl:mx-96 xl:px-28 '>
           <div className='  mx-auto grid  w-full max-w-sm '>
-            <h2 className=' text-center text-3xl font-bold leading-8 tracking-tight text-white'>
-              {t('btnLogin')}
-            </h2>
+            <h2 className=' text-center text-3xl font-bold leading-8 tracking-tight text-white'>{t('btnLogin')}</h2>
           </div>
           <div className='mx-auto mt-5  w-full max-w-sm space-y-5'>
             <div>
@@ -86,26 +91,38 @@ function Login() {
                 onChange={handleChangeInputUser}
                 type='text'
                 value={inputUserid}
-                className='block  w-full max-w-sm rounded-md border bg-transparent border-slate-300 p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
+                className='block  w-full max-w-sm rounded-md border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
                 placeholder={placeholderUserID}
-                maxLength={10} required
+                maxLength={10}
+                required
               />
             </div>
-            <div>
+            <div className="relative">
               <input
                 onChange={handleChangeInputPass}
-                type='password'
+                type={showPassword ? 'text' : 'password'}
                 value={inputPass}
-                className='block w-full max-w-sm rounded-md border bg-transparent border-slate-300 p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
+                className='block w-full max-w-sm rounded-md border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
                 placeholder={placeholderPass}
-                maxLength={15} required
+                maxLength={15}
+                required
               />
+               <button
+              type='button'
+              className='absolute inset-y-0  right-0 flex cursor-pointer items-center pr-3'
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+            </button>
             </div>
             <div>{message != '' ? message : ''}</div>
             <div>
               <button
                 onClick={handleLogin}
-                className={`mx-auto w-full rounded-lg outline outline-1  px-3 py-2 font-bold text-gray-500    ${isLoading ? 'disabled cursor-no-drop' : 'hover:bg-gray-800  hover:text-white'}`} disabled={isLoading}
+                className={`mx-auto w-full rounded-lg px-3 py-2  font-bold text-gray-500 outline outline-1    ${
+                  isLoading ? 'disabled cursor-no-drop' : 'hover:bg-gray-800  hover:text-white'
+                }`}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <svg
@@ -131,7 +148,7 @@ function Login() {
           <div className='mx-auto mt-2 w-full max-w-sm'>
             {/* Bạn chưa có tài khoản?&emsp; */}
             <Link to='/register' className='text-center font-bold text-blue-800 hover:opacity-75'>
-            {t('btnRegister')}?
+              {t('btnRegister')}?
             </Link>
           </div>
           <div className='mx-auto mt-5 grid w-full max-w-sm grid-cols-4 md:grid-cols-4  '>

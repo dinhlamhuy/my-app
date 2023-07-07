@@ -1,4 +1,5 @@
 import CustomModal from 'components/CustomModal'
+import CustomModal2 from 'components/CustomModalScan'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { Link, useNavigate } from 'react-router-dom'
@@ -6,10 +7,21 @@ import { ReBackstockOutAll, getMaterial, searchMaterialNo, stockOutAll, stockOut
 import { Material_Label, Stock_Out } from 'utils/Data_Stock_In_Out'
 import i18n from 'i18n/i18n'
 import { useTranslation } from 'react-i18next'
-import moment from 'moment';
+import moment from 'moment'
 import { LogUser } from 'services/AuthServices'
+import { AiFillCamera, AiOutlineFileSearch, AiOutlineLoading3Quarters } from 'react-icons/ai'
+import QRScanner from 'components/QRScanner'
 function StockOutScreens() {
   const { t } = useTranslation()
+  const rows = document.querySelectorAll('tr')
+  rows.forEach((row: HTMLElement) => {
+    row.addEventListener('focus', () => {
+      row.classList.add('bg-gray-600')
+    })
+    row.addEventListener('blur', () => {
+      row.classList.remove('bg-gray-600')
+    })
+  })
   const defaultMaterialLabelValue: Material_Label = {
     Material_Label_Serial: '',
     Supplier: '',
@@ -35,6 +47,7 @@ function StockOutScreens() {
     Arrival_QTY: 0
   }
   const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [modalIsOpen2, setModalIsOpen2] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loadingTSL, setLoadingTSL] = useState(false)
   const [toggleButton, settoggleButton] = useState(false)
@@ -46,7 +59,9 @@ function StockOutScreens() {
   const [btnSearchTSL, setBtnSearchTSL] = useState('')
   const [MessageSearch, setMessageSearch] = useState('')
   const [slXuat, setslXuat] = useState(0)
-  const [slConLai, setslConLai] = useState(ContentTSL.QTY)
+  const [TotalQuantity, setTotalQuantity] = useState(0)
+  const [TotalQuantityFocus, setTotalQuantityFocus] = useState(0)
+  const [slConLai, setslConLai] = useState(ContentTSL.QTY || 0)
   const User_ID = JSON.parse(localStorage.userData).User_ID
 
   const arrayStrig = ContentTSL.Print_QTY.split(' ')
@@ -57,6 +72,23 @@ function StockOutScreens() {
   const placeholderMaterinal = t('dcmMaterial_No')
   const placeholderBarcode = t('dcpBarcode')
   const navigate = useNavigate()
+
+  const openModal2 = async () => {
+    setModalIsOpen2(true)
+  }
+
+  const handleScan = async (result: any | null) => {
+    if (result) {
+      setModalIsOpen2(false)
+      // await handleSubmitBtnSearch(result.text)
+      await handleStockOutAll(result.text)
+
+      // if (racktxt!=='' && (result.text.length == 15 || result.text.length == 16)) {
+      setModalIsOpen2(true)
+      // }
+    }
+  }
+
   const HandleReportStockOut = async () => {
     await LogUser(User_ID, 'Function: frmReport_Stock_Out()')
     navigate('/reportstockout')
@@ -72,41 +104,38 @@ function StockOutScreens() {
     setLoading(true)
     const chuoi = event.target.value
     setBtnSearch(chuoi)
-    if (chuoi.length == 15 || chuoi.length == 16) {
-      // const res = await getMaterial(chuoi)
-      const res = await stockOutAll(chuoi, User_ID)
-      if (res.dml) {
-        setContent((prevContent) => prevContent.concat(res.dml))
-
-      }
-    } else {
-      setContentTSL(defaultMaterialLabelValue)
-    }
-    setLoading(false)
+    handleStockOutAll(chuoi)
   }
 
   const handlePaste = async (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault()
     const clipboardData = event.clipboardData || (window as any).Clipboard
     const pastedData = clipboardData.getData('text')
-    if (pastedData.length == 15 || pastedData.length == 16) {
+    handleStockOutAll(pastedData)
+  }
+  const handleStockOutAll = async (text: string) => {
+    if (text.length == 15 || text.length == 16) {
       setLoading(true)
-      setBtnSearch(pastedData)
-      const res = await stockOutAll(pastedData, User_ID)
+      setBtnSearch(text)
+      const res = await stockOutAll(text, User_ID)
       if (res.dml) {
-        // const QTY = res.dml.QTY
         setContent((prevContent) => prevContent.concat(res.dml))
-
+        const updatedTotalQuantity = (TotalQuantity + Number(res.dml.QTY)).toFixed(2)
+        setTotalQuantity(Number(updatedTotalQuantity))
+        setBtnSearch('')
       }
       setLoading(false)
     }
   }
-
-  const HandleTravekho = async (BarCode: string) => {
-    const confirmed = window.confirm('Bạn muốn hủy đơn xuất')
+  const HandleTravekho = async (BarCode: string, QTY: number, Print_QTY: string) => {
+    const parts = Print_QTY.split('/')
+    const quantity = parseInt(parts[1].trim())
+    setTotalQuantityFocus(quantity)
+    const confirmed = window.confirm('You want to cancel this item: ' + BarCode)
     if (confirmed) {
       const res = await ReBackstockOutAll(BarCode, User_ID)
-      console.log(res)
+      const updatedTotalQuantity = (TotalQuantity - Number(QTY)).toFixed(2)
+      setTotalQuantity(Number(updatedTotalQuantity))
       setContent((prevData) => prevData.filter((item) => item.BarCode !== BarCode))
     }
   }
@@ -155,13 +184,7 @@ function StockOutScreens() {
     const value = e.target.value
     if (ContentTSL.QTY > 0) {
       const parsedValue = parseFloat(value)
-      if (
-        // /^\d+$/.test(value) &&
-        /^[0-9]*\.?[0-9]+$/.test(value) &&
-        !isNaN(parsedValue) &&
-        Number.isInteger(parsedValue) &&
-        parsedValue <= ContentTSL.QTY
-      ) {
+      if (!isNaN(parsedValue) && parsedValue <= ContentTSL.QTY) {
         setslXuat(value)
         const conlai = ContentTSL.QTY - parsedValue
         setslConLai(conlai)
@@ -217,7 +240,7 @@ function StockOutScreens() {
     setContent([])
     if (Materia_No !== '') {
       const res = await searchMaterialNo(Materia_No, DateStart, DateEnd)
-      console.log(res)
+      // console.log(res)
       if (res != null) {
         setContent((prevContent) => prevContent.concat(res.dml))
       } else {
@@ -254,27 +277,15 @@ function StockOutScreens() {
 
           <div>
             <p className='md:px32 border-b px-24 text-center   align-middle text-2xl font-bold text-white sm:px-28 '>
-              {t('tsmStock_Out')}
+              {t('tsmStock_Out')}&emsp;
+              <button className='p-0' onClick={openModal2}>
+                <AiFillCamera />
+              </button>
             </p>
           </div>
-          <div className='  mx-2 text-center  font-bold' style={{ width: '30px' }}>
-            <button onClick={HandleReportStockOut}>
-              <svg
-                className='text-bold text-white'
-                strokeLinecap='round'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1.5'
-                viewBox='0 0 24 24'
-                xmlns='http://www.w3.org/2000/svg'
-                aria-hidden='true'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'
-                ></path>
-              </svg>
+          <div className='  mx-2 text-center text-2xl  font-bold' style={{ width: '30px' }}>
+            <button onClick={HandleReportStockOut} className='text-2xl'>
+              <AiOutlineFileSearch />
             </button>
           </div>
         </div>
@@ -288,7 +299,7 @@ function StockOutScreens() {
                   htmlFor='chedo'
                   className=' text-xs sm:text-xs  md:text-base md:text-sm  md:text-sm lg:text-base xl:text-base'
                 >
-                  <input type='checkbox' id='chedo' />
+                  <input type='checkbox' id='chedo' onClick={openModal2} />
                   &ensp;{t('gpbMode')}&emsp;&ensp;
                   <button className='rounded-md border px-1' onClick={handleToggleClickSearch}>
                     {t('btnSearch')}
@@ -355,14 +366,15 @@ function StockOutScreens() {
             <div className='col-span-3   grid w-full grid-cols-1 gap-y-2 pl-2  pr-4 md:col-span-2 lg:pr-8  '>
               <div className='relative text-right md:w-full '>
                 <input
-                  type='text' value={Materia_No}
+                  type='text'
+                  value={Materia_No}
                   placeholder={placeholderMaterinal}
                   onChange={(e) => setMateria_No(e.target.value)}
                   className='border-1 w-4/5    rounded-full bg-transparent px-1   text-white outline outline-1 outline-white'
                 />
-                <button 
+                <button
                   onClick={handleSearchMaterial}
-                  className='absolute right-0 h-full rounded-r-full  px-2 lg:-top-1 py-0  text-white     '
+                  className='absolute right-0 h-full rounded-r-full  px-2 py-0 text-white  lg:-top-1     '
                 >
                   &#128269;
                 </button>
@@ -413,10 +425,10 @@ function StockOutScreens() {
               </div>
               <div className='md:pt-4 '>
                 <div className='  w-full text-xs md:my-2  md:text-sm lg:text-base '>
-                  {t('lblQty_In')} {Content[Content.length - 1]?.Total_QTY || 0}{' '}
+                  {t('lblQty_In')} {TotalQuantityFocus}
                 </div>
                 <div className='w-full text-xs md:my-2  md:text-sm lg:text-base  '>
-                  {t('lblQty_Out')} {Content[Content.length - 1]?.QTY || 0}{' '}
+                  {t('lblQty_Out')} {TotalQuantity}
                 </div>
               </div>
             </div>
@@ -462,7 +474,7 @@ function StockOutScreens() {
               <th className='w-[300rem] px-2' style={{ width: '150px' }}>
                 {t('dcmSupplier')}
               </th>
-              <th className='w-[300rem] px-2' style={{ width: '200px' }}>
+              <th className='w-[300rem] px-2' style={{ width: '250px' }}>
                 {t('dcmMaterial_Name')}
               </th>
               <th className='w-[300rem] px-2' style={{ width: '80px' }}>
@@ -501,29 +513,31 @@ function StockOutScreens() {
             </tr>
           </thead>
           <tbody>
-            {Content ? Content.map((row) => (
-              <tr
-                className='cursor-pointer hover:bg-[#141c30]'
-                key={row.BarCode}
-                onClick={(BarCode) => HandleTravekho(row.BarCode)}
-              >
-                <td>{row.BarCode}</td>
-                <td>{row.Material_No}</td>
-                <td>{row.Supplier}</td>
-                <td>{row.Material_Name}</td>
-                <td>{row.Color}</td>
-                <td>{row.Size}</td>
-                <td>{row.QTY}</td>
-                <td>{row.Print_QTY}</td>
-                <td>{row.Order_No}</td>
-                <td>{row.Roll}</td>
-                <td>{moment(row.Modify_Date).format('DD/MM/YYYY')}</td>
-                <td>{row.Supplier_No}</td>
-                <td>{row.Work_Order}</td>
-                <td>{moment(row.Modify_Date).format('DD/MM/YYYY')}</td>
-                <td>{row.User_Serial_Key}</td>
-              </tr>
-            )) :""}
+            {Content
+              ? Content.map((row) => (
+                  <tr
+                    className='tr-focus:bg-gray-600 cursor-pointer border-b  hover:bg-[#141c30] '
+                    key={row.BarCode}
+                    onClick={(BarCode) => HandleTravekho(row.BarCode, row.QTY, row.Print_QTY)}
+                  >
+                    <td>{row.BarCode}</td>
+                    <td>{row.Material_No}</td>
+                    <td>{row.Supplier}</td>
+                    <td>{row.Material_Name}</td>
+                    <td>{row.Color}</td>
+                    <td>{row.Size}</td>
+                    <td>{row.QTY}</td>
+                    <td>{row.Print_QTY}</td>
+                    <td>{row.Order_No}</td>
+                    <td>{row.Roll}</td>
+                    <td>{moment(row.Modify_Date).format('DD/MM/YYYY')}</td>
+                    <td>{row.Supplier_No}</td>
+                    <td>{row.Work_Order}</td>
+                    <td>{moment(row.Modify_Date).format('DD/MM/YYYY')}</td>
+                    <td>{row.User_Serial_Key}</td>
+                  </tr>
+                ))
+              : ''}
           </tbody>
         </table>
       </div>
@@ -561,26 +575,7 @@ function StockOutScreens() {
           <div className='col-span-2'>
             {loadingTSL ? (
               <div className='mt-1 flex '>
-                <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'>
-                  <circle cx='12' cy='12' r='10' fill='none' strokeWidth='2' stroke='#000'>
-                    <animate
-                      attributeName='stroke-dasharray'
-                      attributeType='XML'
-                      from='0, 50'
-                      to='45, 5'
-                      dur='1s'
-                      repeatCount='indefinite'
-                    />
-                    <animate
-                      attributeName='stroke-dashoffset'
-                      attributeType='XML'
-                      from='0'
-                      to='-35'
-                      dur='1s'
-                      repeatCount='indefinite'
-                    />
-                  </circle>
-                </svg>
+                <AiOutlineLoading3Quarters />
                 &emsp;
                 <label className='text-xs text-gray-400  md:text-sm '>loading...</label>
               </div>
@@ -604,7 +599,7 @@ function StockOutScreens() {
               type='text'
               className='w-full rounded-md border px-1'
               value={slXuat}
-              // pattern="[0-9]*\.?[0-9]+"
+              pattern='^(?:[1-9][0-9]*|0(?:\.[0-9]+)?)$' // Thêm pattern để giới hạn định dạng số thập phân
               minLength={0}
               onChange={handleChangeSLTSL}
             />
@@ -632,6 +627,12 @@ function StockOutScreens() {
           </div>
         </div>
       </CustomModal>
+      <CustomModal2 isOpen={modalIsOpen2} onClose={() => setModalIsOpen2(false)}>
+        <div>
+          <QRScanner onScan={handleScan} />
+          <button>&#8689;</button>
+        </div>
+      </CustomModal2>
     </main>
   )
 }

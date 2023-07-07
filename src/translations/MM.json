@@ -183,7 +183,7 @@
 "lblGroup": "အဖွဲ့များ",
 "lblGroup_ID": "တစ်ဦးကအုပ်စုတစ်စုကုဒ်",
 "lblGroup_Name": "အဖွဲ့အမည်မှာ",
-"lblInfor_In_Out": "သွင်းကုန်နှင့် ပို့ကုန် အချက်အလက်",
+"lblInfor_In_Out": "တင်ပို့ခြင်း။",
 "lblLanguage": "ဘာသာစကား",
 "lblLeave_Date_User": "ပြီးစီးသည့်ရက်စွဲ",
 "lblList_Delivery": "ပေးပို့စာရင်း",
@@ -301,5 +301,9 @@
 "tsmStorage_Add": "ေနရာမ်ားထပ္ေပါင္းျခင္း",
 "tsmSystem": "စနစ္",
 "tsmUpdateProgram": "ေဆာ့၀ဲ update",
-"tsmVietnames": "ဗီယက္နမ္ဘာသာ"
+"tsmVietnames": "ဗီယက္နမ္ဘာသာ",
+"loginsuccess": "အကောင့်ဝင်ပြီးပါပြီ။",
+"batfulname": "အမည်တွင် အထူးအက္ခရာများ မပါဝင်နိုင်ပါ။",
+"tsmpassword":"စကားဝှက်တွင် နေရာလွတ်များ မပါဝင်နိုင်ပါ။",
+"tsmuserid":"UserID တွင် နေရာလွတ်များ မပါဝင်နိုင်ပါ။"
 }

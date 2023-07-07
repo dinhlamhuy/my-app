@@ -206,7 +206,7 @@
     "lblGroup_ID": "Group ID",
     "lblGroup_Name": "Group Name",
     "lblHistory_Infor": "History RY",
-    "lblInfor_In_Out": "Import and Export",
+    "lblInfor_In_Out": "Export",
     "lblLanguage": "Language",
     "lblLeave_Date_User": "Leave Date",
     "lblList_Delivery": "Inventory Materials List",
@@ -337,5 +337,10 @@
     "tsmSystem": "System",
     "tsmSystemUser": "System User",
     "tsmUpdateProgram": "Update program",
-    "tsmVietnames": "Vietnam"
+    "tsmVietnames": "Vietnam",
+    "batfulname": "Name cannot contain special characters",
+    "loginsuccess": "Succesful",
+    "tsmpassword":"Password cannot contain spaces",
+     "tsmuserid":"UserID cannot contain spaces"
+
 }

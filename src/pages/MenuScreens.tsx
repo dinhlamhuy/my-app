@@ -1,15 +1,14 @@
-import React, { useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
 import { RootState } from 'store'
 import { selectuser } from 'store/authSelectors'
 import { ChangeLanguageservice } from 'services/languageServices'
 import i18n from 'i18n/i18n'
 import CustomModal from 'components/CustomModal2'
 import CustomModalPass from 'components/CustomModalPass'
-import { LogUser } from 'services/AuthServices'
+import { ChangePassservice, LogUser } from 'services/AuthServices'
 import { useNavigate } from 'react-router-dom'
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 const MenuScreens = () => {
@@ -23,18 +22,54 @@ const MenuScreens = () => {
   const [oldpassword, setOldPassword] = useState('')
   const [newpassword, setNewPassword] = useState('')
   const [repassword, setRePassword] = useState('')
+  const [Messageoldpass, setMessageoldpass] = useState('')
+  const [Messagenewpass, setMessagenewpass] = useState('')
+  const [Messagerepass, setMessagerepass] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
+  const [MessagePass, setMessagePass] = useState('')
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
   const navigate = useNavigate()
+
+  const handleOldPassword = (e: ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    if (password.indexOf(' ') === -1) {
+      setMessageoldpass('')
+      setOldPassword(password)
+      console.log(password)
+    } else {
+      const txt = t('tsmpassword')
+      setMessageoldpass(txt)
+    }
+  }
+  const handleNewPassword = (e: ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    if (password.indexOf(' ') === -1) {
+      setMessagenewpass('')
+      setNewPassword(password)
+    } else {
+      const txt = t('tsmpassword')
+      setMessagenewpass(txt)
+    }
+  }
+  const handleRePassword = (e: ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    if (password.indexOf(' ') === -1) {
+      setMessagerepass('')
+      setRePassword(password)
+    } else {
+      const txt = t('tsmpassword')
+      setMessagerepass(txt)
+    }
+  }
   const openModal = async () => {
     setModalIsOpen(true)
     await LogUser(userDatas.User_ID, 'Function: frmLanguages()')
   }
   const openModalPass = async () => {
     setModalIsOpenPass(true)
+    setMessagePass('')
     await LogUser(userDatas.User_ID, 'Function: frmForm_Change_Pass()')
   }
 
@@ -77,7 +112,37 @@ const MenuScreens = () => {
     }
     console.log('Message: ', response.Message)
   }
-
+  const handleChangePass = async () => {
+    setMessagePass('')
+    let text = ''
+    if (oldpassword !== '' && newpassword !== '' && repassword !== '') {
+      if (newpassword === repassword) {
+        const alert = t('msgYouWantUpdate')
+        const confirmed = window.confirm(alert)
+        if (confirmed) {
+          const res = await ChangePassservice(userDatas.User_ID, oldpassword, newpassword)
+          if (res.Status === 0) {
+            setOldPassword('')
+            setNewPassword('')
+            setRePassword('')
+            text = t('msgChangePassword')
+          } else if (res.Status === 1) {
+            text = t('msgNotCorrect')
+          } else if (res.Status === 2) {
+            text = t('msgNoChangePassword')
+          }
+        }
+      } else {
+        text = t('msgComfirmNotCorrect')
+      }
+    } else {
+      text = t('msgPasswordKeyIn')
+    }
+    setMessagePass(text)
+  }
+  const placeholderOldPass = t('lblPassword')
+  const placeholderNewPass = t('lblPassword_New')
+  const placeholderRePass = t('lblConfirmNewPassword')
   return (
     <div className='background-container h-screen w-screen'>
       <Helmet>
@@ -181,62 +246,80 @@ const MenuScreens = () => {
       </CustomModal>
       {/* Change password */}
       <CustomModalPass isOpen={modalIsOpenPass} onClose={closeModalPass}>
-        <div className='mx-auto grid h-full w-full max-w-sm  grid-cols-1  '>
+        <div className='mx-auto mt-5  w-full max-w-sm space-y-5'>
           <div className='text-center text-2xl font-bold tracking-tight text-white ' style={{ fontSize: '30px' }}>
             {t('btnChangepassword')}!
           </div>
-          <div className=' relative font-bold tracking-tight text-white' style={{ fontSize: '30px' }}>
+          <div className=' relative font-bold tracking-tight text-white mb-0' style={{ fontSize: '30px' }}>
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder='Mật khẩu cũ'
+              placeholder={placeholderOldPass}
+              value={oldpassword}
+              onChange={handleOldPassword}
               className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
             />
             <button
               type='button'
-              className='absolute inset-y-0 right-0 -top-5 flex cursor-pointer items-center pr-3'
+              className='absolute inset-y-0  right-0 flex cursor-pointer items-center py-0 pr-3'
               onClick={togglePasswordVisibility}
             >
               {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
             </button>
+          {/* <div className='mt-0 py-0'> */}
+
+            <label className='mt-0 absolute text-xs text-white block font-light'>{Messageoldpass}</label>
+          {/* </div> */}
+          </div>
+          <div className=' relative font-bold  text-white' style={{ fontSize: '30px' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder={placeholderNewPass}
+              value={newpassword}
+              onChange={handleNewPassword}
+              className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
+            />
+            <button
+              type='button'
+              className='absolute inset-y-0  right-0 flex cursor-pointer items-center py-0 pr-3'
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+            </button>
+            {/* <div > */}
+            <label className='mt-0 absolute text-xs text-white block font-light'>{Messagenewpass}</label>
+
+            {/* </div> */}
           </div>
           <div className=' relative font-bold tracking-tight text-white' style={{ fontSize: '30px' }}>
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder='Mật khẩu mới'
+              placeholder={placeholderRePass}
+              value={repassword}
+              onChange={handleRePassword}
               className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
             />
             <button
               type='button'
-              className='absolute inset-y-0 right-0 -top-5 flex cursor-pointer items-center pr-3'
+              className='absolute inset-y-0  right-0 flex cursor-pointer items-center py-0 pr-3'
               onClick={togglePasswordVisibility}
             >
               {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
             </button>
+            <label className='mt-0 absolute text-xs text-white block font-light'>{Messagerepass}</label>
           </div>
-          <div className=' relative font-bold tracking-tight text-white' style={{ fontSize: '30px' }}>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder='Nhập lại mật khẩu mới'
-              className=' w-full max-w-sm rounded-full border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-red-500'
-            />
-            <button
-              type='button'
-              className='absolute inset-y-0 right-0 -top-5 flex cursor-pointer items-center pr-3'
-              onClick={togglePasswordVisibility}
-            >
-              {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
-            </button>
+          <div>
+            <label className='mt-0 absolute text-xs text-white block font-light'>{MessagePass}</label>
           </div>
         </div>
-        <div className=' w-full text-center my-3'>
+        <div className=' my-3 w-full text-center'>
           <button
-            // onClick={closeModal}
+            onClick={handleChangePass}
             className='mx-auto rounded-lg px-10 py-2  font-bold text-white drop-shadow-md hover:bg-green-700 hover:outline  hover:drop-shadow-xl'
           >
             {t('btnChangepassword')}
           </button>
           <button
-            onClick={closeModal}
+            onClick={() => setModalIsOpenPass(false)}
             className='mx-auto rounded-lg px-10 py-2  font-bold text-white drop-shadow-md hover:bg-teal-700 hover:outline  hover:drop-shadow-xl'
           >
             {t('btnExit')}

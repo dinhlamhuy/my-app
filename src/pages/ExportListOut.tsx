@@ -11,13 +11,6 @@ import { LogUser } from 'services/AuthServices'
 
 export const ExportListOut = () => {
   const User_ID = JSON.parse(localStorage.userData).User_ID
-
-  useEffect(() => {
-    const logUser = async () => {
-      await LogUser(User_ID, 'Function: frmReport_Stock_Out()');
-    };
-    logUser();
-  }, []);
   const defaultExportLIST: ExportLIST = {
     Material_No: '',
     Work_Order: '',
@@ -172,7 +165,7 @@ export const ExportListOut = () => {
           <div className='1  mt-2 grid   grid-cols-1 md:grid-cols-2'>
             <div className='grid w-full grid-rows-2  gap-2 pr-3 md:gap-4 md:text-right'>
               <div>
-                Số phiếu&emsp;
+                {t('dcmOrder_No')}&emsp;
                 <input
                   type='text'
                   value={OrderNo}
@@ -182,7 +175,7 @@ export const ExportListOut = () => {
                 />
               </div>
               <div>
-                Mã vật tư&emsp;
+                {t('dcmMaterial_No')}&emsp;
                 <input
                   type='text'
                   value={MaterialNo}
@@ -194,7 +187,7 @@ export const ExportListOut = () => {
             </div>
             <div className='grid w-full grid-rows-1 pt-2  text-left md:grid-rows-2 md:gap-4 md:pl-3 md:pt-0'>
               <div>
-                Nhà cung ứng&emsp;
+                {t('dcpSupplier')}&emsp;
                 <select
                   style={{ backgroundColor: '#1c2437' }}
                   className='border-1 w-36 rounded-full px-2 text-white outline outline-1 outline-white'
@@ -235,7 +228,7 @@ export const ExportListOut = () => {
                 onClick={handlSearch}
                 className='rounded-xl border bg-gray-700 px-3  py-1 text-xs font-bold md:text-sm  lg:text-base'
               >
-                Tìm kiếm
+                {t('btnSearch')}
               </button>
             </div>
             <div className=''>
@@ -243,12 +236,12 @@ export const ExportListOut = () => {
                 onClick={exportToExcel}
                 className='rounded-xl border bg-gray-700 px-3 py-1 text-xs font-bold md:text-sm  lg:text-base'
               >
-                Xuất excel
+                {t('btnExcel')}
               </button>
             </div>
             <div className=' text-left'>
               <button className='rounded-xl border bg-gray-700 px-3  py-1 text-xs font-bold md:text-sm  lg:text-base'>
-                Làm mới
+                {t('btnRemove')}
               </button>
             </div>
             <div></div>

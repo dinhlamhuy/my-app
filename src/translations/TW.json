@@ -31,7 +31,7 @@
     "btnInventory": "盤點",
     "btnLanguage": "語言",
     "btnLogin": "登入",
-    "btnRegister":"登记",
+    "btnRegister": "登记",
     "btnLogout": "登出",
     "btnManager_Rack": "貨架管理",
     "btnMyanmar": "緬甸文",
@@ -206,7 +206,7 @@
     "lblGroup_ID": "群組代碼",
     "lblGroup_Name": "群組名稱",
     "lblHistory_Infor": "命令信息",
-    "lblInfor_In_Out": "數位倉庫",
+    "lblInfor_In_Out": "出口",
     "lblLanguage": "語言",
     "lblLeave_Date_User": "終止日期",
     "lblList_Delivery": "库存物料清单",
@@ -335,5 +335,9 @@
     "tsmSystem": "系統資訊",
     "tsmSystemUser": "用户",
     "tsmUpdateProgram": "程式更新",
-    "tsmVietnames": "越南文"
+    "tsmVietnames": "越南文",
+    "loginsuccess": "登录成功",
+    "batfulname": "名称不能包含特殊字符",
+    "tsmpassword": "密码不能包含空格",
+    "tsmuserid": "用户 ID 不能包含空格"
 }

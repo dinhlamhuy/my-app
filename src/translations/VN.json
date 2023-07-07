@@ -206,7 +206,7 @@
     "lblGroup_ID": "Mã nhóm",
     "lblGroup_Name": "Tên Nhóm",
     "lblHistory_Infor": "Thông Tin RY",
-    "lblInfor_In_Out": "Nhập Xuất Kho",
+    "lblInfor_In_Out": "Xuất Kho",
     "lblLanguage": "Ngôn ngữ",
     "lblLeave_Date_User": "Ngày kết thúc",
     "lblList_Delivery": "Danh Sách Kiểm Kê",
@@ -337,5 +337,10 @@
     "tsmSystem": "Hệ thống",
     "tsmSystemUser": "Người dùng hệ thống",
     "tsmUpdateProgram": "Cập nhật chương trình",
-    "tsmVietnames": "Tiếng Việt"
+    "tsmVietnames": "Tiếng Việt",
+    "loginsuccess": "Đăng nhập thành công",
+    "batfulname": "Tên người dùng không được chứa ký tự đặc biệt",
+    "tsmpassword":"Mật khẩu không được chứa khoảng trắng",
+    "tsmuserid":"ID người dùng không được chứa khoảng trắng"
+
 }

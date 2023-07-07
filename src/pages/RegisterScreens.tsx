@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet'
 import { useTranslation, withTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Registerservice } from 'services/AuthServices'
-
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 export const RegisterScreen = () => {
   const { t, i18n } = useTranslation()
   const [language, setLanguage] = useState('EN')
@@ -12,59 +12,98 @@ export const RegisterScreen = () => {
     i18n.changeLanguage(lng)
     setLanguage(lng)
   }
-  const placeholderUserID =t('dcmUser_ID')
+  const [showPassword, setShowPassword] = useState(false)
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+  const placeholderUserID = t('dcmUser_ID')
   const placeholderPassword = t('lblPassword')
   const placeholderRePassword = t('lblConfirmNewPassword')
-  const placeholderFullName = t('lblUser_Name') 
+  const placeholderFullName = t('lblUser_Name')
 
   const [User_ID, setUser_ID] = useState('')
+  const [MessageUser_ID, setMessageUser_ID] = useState('')
   const [Password, setPassword] = useState('')
   const [RePassword, setRePassword] = useState('')
   const [FullName, setFullName] = useState('')
   const [MessageFullName, setMessageFullName] = useState('')
   const [MessagePass, setMessagePass] = useState('')
+  const [MessageRePass, setMessageRePass] = useState('')
   const [Message, setMessage] = useState('')
-var chuoi="";
+  var chuoi = ''
 
-
-function isInputValid(input: string): boolean {
-  const regex =/^[^\\+{}[\]()*&^%$#@!`~|:;"'<>?=_-]*$/;// Biểu thức chính quy chỉ cho phép chữ cái, số và khoảng trắng
-
-  return regex.test(input);
-}
-const handleFullName=(e: ChangeEvent<HTMLInputElement>)=>{
-  if (isInputValid(e.target.value)) {
-    setMessageFullName("")
-
-    setFullName(e.target.value);
-  } else {
-    setMessageFullName("Tên không thể chứ ký tự đặc biệt")
+  function isInputValid(input: string): boolean {
+    const regex = /^[^\\+{}[\]()*&^%$#@!`~|:;"'<>?=_-]*$/ // Biểu thức chính quy chỉ cho phép chữ cái, số và khoảng trắng
+    return regex.test(input)
   }
-}
+  const handleFullName = (e: ChangeEvent<HTMLInputElement>) => {
+    if (isInputValid(e.target.value)) {
+      setMessageFullName('')
+      setFullName(e.target.value)
+    } else {
+      const txtx = t('batfulname')
+      // setMessageFullName("Name cannot contain special characters")
+      setMessageFullName(txtx)
+    }
+  }
+
+  const handleUser_ID = (e: ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    if (password.indexOf(' ') === -1) {
+      setMessageUser_ID('')
+      setUser_ID(e.target.value)
+    } else {
+      const txt = t('tsmuserid')
+      setMessageUser_ID(txt)
+    }
+  }
+  const handlePassword = (e: ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    if (password.indexOf(' ') === -1) {
+      setMessagePass('')
+      setPassword(e.target.value)
+    } else {
+      const txt = t('tsmpassword')
+      setMessagePass(txt)
+    }
+  }
+  const handleRePassword = (e: ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    if (password.indexOf(' ') === -1) {
+      setMessageRePass('')
+      setRePassword(e.target.value)
+    } else {
+      const txt = t('tsmpassword')
+      setMessageRePass(txt)
+    }
+  }
   const [isLoading, setisLoading] = useState(false)
   const handleRegister = async () => {
     try {
+      if (Password !== '' && RePassword !== '' && FullName !== '' && User_ID !== '') {
+        if (Password === RePassword && Password != '' && RePassword != '') {
+          setMessagePass('')
+          setisLoading(true)
+          const response = await Registerservice(User_ID, Password, FullName, language)
 
-      if (Password === RePassword && Password != '' && RePassword != '') {
-        setMessagePass('');
-        setisLoading(true)
-        const response = await Registerservice(User_ID,Password, FullName, language);
-       
-        if(response.Message =='Success'){
-          chuoi=t('msgUpdateSuccesful')
-          window.location.href = '/login';
-        }else if(response.Message=='Account already exists'){
-          chuoi=t('mscExistingAccount')
-          setisLoading(false)
-        }else{
-          chuoi="Error";
-          setisLoading(false)
-        }
+          if (response.Message == 'Success') {
+            chuoi = t('msgUpdateSuccesful')
+            window.location.href = '/login'
+          } else if (response.Message == 'Account already exists') {
+            chuoi = t('mscExistingAccount')
+            setisLoading(false)
+          } else {
+            chuoi = 'Error'
+            setisLoading(false)
+          }
           setMessage(chuoi)
-      } else if(Password !== RePassword){
-        
-        const string=t('msgComfirmNotCorrect');
-        setMessage(string);
+        } else if (Password !== RePassword) {
+          const string = t('msgComfirmNotCorrect')
+          setMessage(string)
+        }
+      } else {
+        const string = t('msgCompleteInformation')
+        setMessage(string)
       }
       setisLoading(false)
     } catch (error) {
@@ -74,15 +113,13 @@ const handleFullName=(e: ChangeEvent<HTMLInputElement>)=>{
 
   return (
     <div className='h-screen w-screen bg-blue-50'>
-       <Helmet>
-      <title>{t('btnRegister')} - WareHouse</title>
+      <Helmet>
+        <title>{t('btnRegister')} - WareHouse</title>
       </Helmet>
-      <div className='  flex  min-h-full flex-col justify-center bgLogin'>
-        <div className='sm:mx-18 mx-14 rounded-md border bgcontentLogin px-8 py-10 drop-shadow-lg sm:px-6 md:mx-32  md:px-12 lg:mx-64 lg:px-20 xl:mx-96 xl:px-28 '>
+      <div className='  bgLogin  flex min-h-full flex-col justify-center'>
+        <div className='sm:mx-18 bgcontentLogin mx-14 rounded-md border px-8 py-10 drop-shadow-lg sm:px-6 md:mx-32  md:px-12 lg:mx-64 lg:px-20 xl:mx-96 xl:px-28 '>
           <div className='  mx-auto grid  w-full max-w-sm '>
-            <h2 className=' text-center text-3xl font-bold leading-8 tracking-tight text-white'>
-              {t('btnRegister')}!
-            </h2>
+            <h2 className=' text-center text-3xl font-bold leading-8 tracking-tight text-white'>{t('btnRegister')}!</h2>
           </div>
           <div className='mx-auto mt-5  w-full max-w-sm space-y-5'>
             <div>
@@ -90,49 +127,76 @@ const handleFullName=(e: ChangeEvent<HTMLInputElement>)=>{
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleFullName(e)}
                 type='text'
                 value={FullName}
-                className='block  w-full max-w-sm rounded-md border bg-transparent border-slate-300 p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
+                className='block  w-full max-w-sm rounded-md border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
                 placeholder={placeholderFullName}
                 maxLength={50}
               />
-              <label htmlFor="">{MessageFullName}</label>
+              <label htmlFor='' className='text-xs text-white'>
+                {MessageFullName}
+              </label>
             </div>
 
             <div>
               <input
-                onChange={(e) => setUser_ID(e.target.value)}
+                onChange={handleUser_ID}
                 type='text'
                 value={User_ID}
-                className='block  w-full max-w-sm rounded-md border bg-transparent border-slate-300 p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
+                className='block  w-full max-w-sm rounded-md border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
                 placeholder={placeholderUserID}
                 maxLength={10}
               />
+              <label htmlFor='' className='text-xs text-white'>
+                {MessageUser_ID}
+              </label>
             </div>
-            <div>
+            <div className='relative'>
               <input
-                onChange={(e) => setPassword(e.target.value)}
-                type='password'
+                onChange={handlePassword}
+                type={showPassword ? 'text' : 'password'}
                 value={Password}
-                className='block w-full max-w-sm rounded-md border bg-transparent border-slate-300 p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
+                className='block w-full max-w-sm rounded-md border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
                 placeholder={placeholderPassword}
                 maxLength={15}
               />
+              <button
+                type='button'
+                className='absolute inset-y-0  right-0 flex cursor-pointer items-center pr-3'
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+              </button>
+              <label htmlFor='' className='absolute text-xs text-white'>
+                {MessagePass}
+              </label>
             </div>
-            <div>
+            <div className='relative'>
               <input
-                onChange={(e) => setRePassword(e.target.value)}
-                type='password'
+                onChange={handleRePassword}
+                type={showPassword ? 'text' : 'password'}
                 value={RePassword}
-                className='block w-full max-w-sm rounded-md border bg-transparent border-slate-300 p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
+                className='block w-full max-w-sm rounded-md border border-slate-300 bg-transparent p-2 text-sm font-medium leading-6 placeholder:italic focus:outline-yellow-500'
                 placeholder={placeholderRePassword}
                 maxLength={15}
               />
+              <button
+                type='button'
+                className='absolute inset-y-0  right-0 flex cursor-pointer items-center pr-3'
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+              </button>
+              <label htmlFor='' className='absolute text-xs text-white'>
+                {MessageRePass}
+              </label>
             </div>
 
-            <label htmlFor=''>{Message != '' ? Message : ''}</label>
+            <label htmlFor='' className='text-xs text-white'>
+              {Message != '' ? Message : ''}
+            </label>
             <div>
               <button
                 onClick={handleRegister}
-                className={`mx-auto w-full rounded-lg outline outline-1 px-3 py-2 font-bold text-gray-300    ${
+                className={`mx-auto w-full rounded-lg px-3 py-2 font-bold text-gray-300 outline outline-1    ${
                   isLoading ? 'disabled cursor-no-drop' : 'hover:bg-gray-800  hover:text-white'
                 }`}
                 disabled={isLoading}
