@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { searchExportList } from 'services/StockOutServices'
 import { ExportLIST } from 'utils/Data_Stock_In_Out'
-import { saveAs } from 'file-saver'
-import * as XLSX from 'xlsx'
+import * as ExcelJS from 'exceljs'
 import moment from 'moment'
 import { LogUser } from 'services/AuthServices'
 
@@ -48,87 +47,78 @@ export const ExportListOut = () => {
   const { t } = useTranslation()
 
   const exportToExcel = () => {
-    if (!ListExport) {
-      console.error('ListExport is undefined.')
-      return
-    }
+    var tongqty = 0;
+    var tongroll = 0;
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Sheet 1')
 
-    const formatDate = (dateString: string) => {
-      const date = moment(dateString)
-      return date.format('DD/MM/YYYY')
-    }
-    var tong = 0
-    const data = ListExport.map((row, i) => [
-      i + ' ' + row.Supplier,
-      row.Order_No,
-      row.Work_Order,
-      row.Material_No,
-      row.Material_Name,
-      row.Print_QTY,
-      row.QTY,
-      row.chitietkien,
-      row.Roll
-    ])
-
-    const formattedHeaders = [
-      t('dcpNum'),
-      t('dcpNum_No'),
-      t('dcmWork_Order'),
-      t('dcmMaterial_No'),
-      t('dcmMaterial_Name'),
-      t('dcmUnit'),
-      t('dcmQTY'),
-      t('dcpContent'),
-      t('dcpRoll')
+    const data = [
+      ['CÔNG TY TNHH LẠC TỶ II'],
+      ['Lô B1, B2 KCN Tân Phú Thạnh - Giai đoạn 1, Tân Phú Thạnh, Châu Thành A, Hậu Giang.'],
+      ['BÁO BIỂU GIAO HÀNG GIA CÔNG HẬU GIANG TỪ '+DateStart+' ĐẾN '+ DateEnd],
+      [
+        t('dcpNum'),
+        t('dcpNum_No'),
+        t('dcmWork_Order'),
+        t('dcmMaterial_No'),
+        t('dcmMaterial_Name'),
+        t('dcmUnit'),
+        t('dcmQTY'),
+        t('dcpContent'),
+        t('dcpRoll')
+      ],
+      ...ListExport.map((row, i) => {
+        tongqty = Number(tongqty )+ Number(row.QTY);
+        tongroll= Number(tongroll) + Number(row.Roll);
+        return [
+          i+1 + ' ' + row.Supplier,
+          row.Order_No,
+          row.Work_Order,
+          row.Material_No,
+          row.Material_Name,
+          row.Print_QTY,
+          row.QTY,
+          row.chitietkien,
+          row.Roll
+        ]
+      }),
+      ['Total', '', '', '', '', '', tongqty.toString(), '', tongroll.toString()]
     ]
+    // Gán giá trị cho các ô dựa trên dữ liệu
+    data.forEach((row, rowIndex) => {
+      row.forEach((cellValue, columnIndex) => {
+        const cell = worksheet.getCell(rowIndex + 1, columnIndex + 1)
+        cell.value = cellValue
 
-    const formattedHeaders0 = ['CÔNG TY TNHH LẠC TỶ II']
-    const formattedHeaders1 = ['Lô B1, B2 KCN Tân Phú Thạnh - Giai đoạn 1, Tân Phú Thạnh, Châu Thành A, Hậu Giang.']
-    const formattedHeaders2 = ['BÁO BIỂU GIAO HÀNG GIA CÔNG HẬU GIANG TỪ NGÀY 01/01/2019 ĐẾN 01/01/2019']
-
-    const formattedData = data.map((row) =>
-      row.map((cell) => {
-        if (typeof cell === 'string' && moment(cell, moment.ISO_8601, true).isValid()) {
-          return formatDate(cell)
+        cell.border = {
+          top: { style: 'thin' },
+          bottom: { style: 'thin' },
+          left: { style: 'thin' },
+          right: { style: 'thin' }
         }
-        return cell
       })
-    )
-
-    const worksheet = XLSX.utils.aoa_to_sheet([
-      formattedHeaders0,
-      formattedHeaders1,
-      formattedHeaders2,
-      formattedHeaders,
-      ...formattedData
-     
-    ])
-    if (!worksheet['!ref']) {
-      console.error('Range is undefined.')
-      return
-    }
-    // Thêm border cho bảng
-    const rangeToApplyBorder = XLSX.utils.decode_range(worksheet['!ref'])
-    const borderStyle = { style: 'thin', color: { rgb: '00000000' } }
-    for (let R = rangeToApplyBorder.s.r; R <= rangeToApplyBorder.e.r; ++R) {
-      for (let C = rangeToApplyBorder.s.c; C <= rangeToApplyBorder.e.c; ++C) {
-        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C })
-        const cell = worksheet[cellAddress]
-        if (cell && cell.t === 's') {
-          cell.s = { border: borderStyle }
-          worksheet[cellAddress] = cell // Cập nhật lại ô trong worksheet
-        }
-      }
-    }
-
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1')
-    const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' })
-    const excelData = new Blob([excelBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
-    saveAs(excelData, 'Danh sách xuất.xlsx')
+
+    const lastRow = worksheet.rowCount
+    // const lastColumn = worksheet.getColumn('D').number
+
+    // Kết hợp ô trong phạm vi từ cột A hàng cuối cùng đến cột D hàng cuối cùng
+    worksheet.mergeCells(`A1:I1`)
+    worksheet.mergeCells(`A2:I2`)
+    worksheet.mergeCells(`A3:I3`)
+    // worksheet.mergeCells(`A${lastRow-1}:H${lastRow-1}`)
+    worksheet.mergeCells(`A${lastRow}:F${lastRow}`)
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'Danh sách xuất kho'+ DateStart +' đến '+ DateEnd+'.xlsx'
+      link.click()
+    })
   }
+
 
   return (
     <main className=' flex h-screen flex-col  text-white'>
