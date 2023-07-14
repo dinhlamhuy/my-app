@@ -23,7 +23,7 @@ export default function StockInScreens() {
       row.classList.remove('bg-gray-600')
     })
   })
-      const patternRack =  /^([a-zA-Z0-9]{1,3}-)?[a-zA-Z0-9]{2}$/;
+  const patternRack = /^([a-zA-Z0-9]{1,3}-)?[a-zA-Z0-9]{2}$/
   const User_ID = JSON.parse(localStorage.userData).User_ID
   const [modalIsOpen, setModalIsOpen] = useState(false)
   const [modalIsOpen2, setModalIsOpen2] = useState(false)
@@ -31,7 +31,7 @@ export default function StockInScreens() {
   const [Content, setContent] = useState<Material_Label_By_Rack[]>([])
   const [newRows, setNewRows] = useState<Material_Label_By_Rack[]>([])
   const [BtnSearch, setBtnSearch] = useState('')
-  const [TotalQuantity, setTotalQuantity] = useState(0)
+  const [TotalQuantity, setTotalQuantity] = useState('')
   const [TotalQuantityRack, setTotalQuantityRack] = useState(0)
   const [TotalRollRack, setTotalRollRack] = useState(0)
   const [TotalRoll, setTotalRoll] = useState(0)
@@ -47,14 +47,13 @@ export default function StockInScreens() {
     setModalIsOpen2(true)
   }
 
-
   const handleScan = async (result: any | null) => {
     if (result) {
       // setModalIsOpen2(false)
 
       await handleSubmitBtnSearch(result.text)
       // if (racktxt!=='' && (result.text.length == 15 || result.text.length == 16)) {
-        // setModalIsOpen2(true)
+      // setModalIsOpen2(true)
       // }
     }
   }
@@ -65,7 +64,7 @@ export default function StockInScreens() {
     handleSubmitBtnSearch(chuoi)
   }
 
-  const handlePaste =  (event: React.ClipboardEvent<HTMLInputElement>) => {
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault()
     const clipboardData = event.clipboardData || (window as any).Clipboard
     const pastedData = clipboardData.getData('text')
@@ -74,13 +73,12 @@ export default function StockInScreens() {
   }
 
   // submit chuỗi ở ô quét
-  const handleSubmitBtnSearch=(Str:string )=>{
+  const handleSubmitBtnSearch = (Str: string) => {
     if (Str.indexOf('-') !== -1 && patternRack.test(Str) && (Str.length === 5 || Str.length === 6)) {
       // setLoading(true)
-     
+
       handleStockInByRack(Str)
-      
-    } else if (racktxt!=='' && (Str.length == 15 || Str.length == 16)) {
+    } else if (racktxt !== '' && (Str.length == 15 || Str.length == 16)) {
       // console.log('bkla bla');
       handlesetMaterialRack(Str, racktxt)
     }
@@ -93,16 +91,23 @@ export default function StockInScreens() {
     setLoading(true)
     if (rack !== '') {
       const res = await getStockInByRack(rack)
-      if(res!==null && res!=='EmptyRacks'){
+      if (res !== null && res !== 'EmptyRacks') {
         // setContent([])
         setRacktxt(rack)
         setContent(res)
-        setTotalQuantityRack((res.reduce((accumulator:number, row:any) => accumulator + Number(row.QTY), 0) || 0).toFixed(2));
-        setTotalRollRack((res.reduce((accumulator:number, row:any) => accumulator + Number(row.Roll), 0) || 0).toFixed(2));
-      }else if(res===null){
+        setTotalQuantityRack(
+          (res.reduce((accumulator: number, row: any) => accumulator + Number(row.QTY), 0) || 0).toFixed(2)
+        )
+        setTotalRollRack(
+          (res.reduce((accumulator: number, row: any) => accumulator + Number(row.Roll), 0) || 0).toFixed(2)
+        )
+        setTotalQuantity(res[0].SL)
+     console.log(res[0])
+        setTotalRoll(res[0].SLRoll)
+      } else if (res === null) {
         setContent([])
         setRacktxt(rack)
-         setTotalQuantityRack(0)
+        setTotalQuantityRack(0)
         setTotalRollRack(0)
       }
 
@@ -111,47 +116,43 @@ export default function StockInScreens() {
     setLoading(false)
   }
   //Nhập vật tư bằng mã BarCode vào Rack
-  const handlesetMaterialRack = async (BarCode:string , Rack:string) => {
+  const handlesetMaterialRack = async (BarCode: string, Rack: string) => {
     setLoading(true)
     setBtnSearch(BarCode)
     const res = await setMaterialRack(BarCode, Rack, User_ID)
-    if (res!==null) {
+    if (res !== null) {
       setBtnSearch('')
-      if (!Content.some(row => row.BarCode === res.BarCode)) {
+      if (!Content.some((row) => row.BarCode === res.BarCode)) {
         setContent((prevContent) => [res, ...prevContent])
         setNewRows((prevNewRows) => prevNewRows.concat(res))
-          const updatedTotalQuantity = (TotalQuantity + Number(res.QTY)).toFixed(2);
-            const updatedTotalRoll = (TotalRoll + Number(res.Roll)).toFixed(2);
-            setTotalQuantity(Number(updatedTotalQuantity));
-            setTotalRoll(Number(updatedTotalRoll));
-            // setModalIsOpen2(false)
+        // const updatedTotalQuantity = (TotalQuantity + Number(res.QTY)).toFixed(2);
+        // const updatedTotalRoll = (TotalRoll + Number(res.Roll)).toFixed(2);
+        setTotalQuantity(res.SL)
+
+        setTotalRoll(res.SLRoll)
+
+        // setModalIsOpen2(false)
       }
     }
-
 
     setLoading(false)
   }
 
-
   const HandleOutRack = async (BarCode: string) => {
     // setOutRack(qr)
-    const confirmed = window.confirm('You want to cancel this item: '+ BarCode)
+    const confirmed = window.confirm('You want to cancel this item: ' + BarCode)
     if (confirmed) {
       const res = await setOutRack(BarCode, User_ID)
-      if(res!==null){
+      if (res !== null) {
         console.log(res)
         if (newRows.some((row) => row.BarCode === BarCode)) {
-          const existingRow = newRows.find((row) => row.BarCode === BarCode);
+          const existingRow = newRows.find((row) => row.BarCode === BarCode)
           if (existingRow) {
-            const updatedTotalQuantity = (TotalQuantity - Number(existingRow.QTY)).toFixed(2);
-            const updatedTotalRoll = (TotalRoll - Number(existingRow.Roll)).toFixed(2);
-            setTotalQuantity(Number(updatedTotalQuantity));
-            setTotalRoll(Number(updatedTotalRoll));
-            // setTotalQuantity(updatedTotalQuantity);
+            setTotalQuantity(res.SL);
+            setTotalRoll(res.SLRoll);
           }
         }
         setContent((prevData) => prevData.filter((item) => item.BarCode !== BarCode))
-
       }
     }
   }
@@ -192,12 +193,15 @@ export default function StockInScreens() {
 
             <div>
               <p className='md:px32 border-b px-24 text-center   align-middle text-2xl font-bold text-white sm:px-28 '>
-                {t('tsmStock_In')} <button className='p-0'  onClick={openModal2}><AiFillCamera /></button>
+                {t('tsmStock_In')}{' '}
+                <button className='p-0' onClick={openModal2}>
+                  <AiFillCamera />
+                </button>
               </p>
             </div>
             <div className='mx-2 text-center  font-bold' style={{ width: '30px' }}>
-              <button  onClick={HandleReportStockIn} className='text-2xl' >
-               <AiOutlineFileSearch />
+              <button onClick={HandleReportStockIn} className='text-2xl'>
+                <AiOutlineFileSearch />
               </button>
             </div>
           </div>
@@ -232,8 +236,7 @@ export default function StockInScreens() {
                   <div className='  w-full text-xs md:my-2  md:text-sm lg:text-base '>
                     {t('lblQty_In')}
                     {TotalQuantityRack}
-                    &#10098;{t('dcmRoll')}:
-                    {TotalRollRack}
+                    &#10098;{t('dcmRoll')}:{TotalRollRack}
                     &#10099;
                   </div>
                 </div>
@@ -303,7 +306,7 @@ export default function StockInScreens() {
                 </div>
                 <div>
                   <button className='w-full rounded-full bg-[#141c30] p-2 outline outline-1 hover:opacity-75'>
-                 QC
+                    QC
                   </button>
                 </div>
                 <div>
@@ -410,10 +413,10 @@ export default function StockInScreens() {
         </table>
       </div>
 
-      <CustomModal isOpen={modalIsOpen} onClose={()=> setModalIsOpen(false)}>
+      <CustomModal isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)}>
         <div></div>
       </CustomModal>
-      <CustomModal2 isOpen={modalIsOpen2} onClose={()=>setModalIsOpen2(false)}>
+      <CustomModal2 isOpen={modalIsOpen2} onClose={() => setModalIsOpen2(false)}>
         <div>
           <QRScanner onScan={handleScan} />
           <button>&#8689;</button>

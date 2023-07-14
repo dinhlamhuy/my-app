@@ -9,7 +9,7 @@ export const Loginservice = async (User_ID: string, Password: string) => {
     const passmd5 = Md5.hashStr(Password);
     const obj = {
       User_ID: User_ID,
-      User_Password: passmd5,
+      User_Password: passmd5.toUpperCase(),
     };
 
     return axios.post('Login', obj).then((response: any) => {
@@ -28,7 +28,7 @@ export const Registerservice = async (User_ID: string, Password: string, User_Na
     const IPv4=await internalIpV4()
     const obj = {
       User_ID: User_ID,
-      User_Password: passmd5,
+      User_Password: passmd5.toUpperCase(),
       User_Name:User_Name,
       TLLanguage:TLLanguage,
       IP4_Address:IPv4
@@ -50,8 +50,8 @@ export const ChangePassservice = async (User_ID: string, OldPassword:string, New
     const IPv4=await internalIpV4()
     const obj = {
       User_ID: User_ID,
-      NewPassword:Md5.hashStr(NewPassword),
-      OldPassword:Md5.hashStr(OldPassword),
+      NewPassword:Md5.hashStr(NewPassword).toUpperCase(),
+      OldPassword:Md5.hashStr(OldPassword).toUpperCase(),
       // IP4_Address:IPv4
     }
     return axios.post('changepassword', obj).then((response: any) => {

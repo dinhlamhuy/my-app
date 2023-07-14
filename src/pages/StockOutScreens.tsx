@@ -120,8 +120,7 @@ function StockOutScreens() {
       const res = await stockOutAll(text, User_ID)
       if (res.dml) {
         setContent((prevContent) => prevContent.concat(res.dml))
-        const updatedTotalQuantity = (TotalQuantity + Number(res.dml.QTY)).toFixed(2)
-        setTotalQuantity(Number(updatedTotalQuantity))
+                setTotalQuantity(res.dml.SL)
         setBtnSearch('')
       }
       setLoading(false)
@@ -134,8 +133,7 @@ function StockOutScreens() {
     const confirmed = window.confirm('You want to cancel this item: ' + BarCode)
     if (confirmed) {
       const res = await ReBackstockOutAll(BarCode, User_ID)
-      const updatedTotalQuantity = (TotalQuantity - Number(QTY)).toFixed(2)
-      setTotalQuantity(Number(updatedTotalQuantity))
+      setTotalQuantity(res)
       setContent((prevData) => prevData.filter((item) => item.BarCode !== BarCode))
     }
   }
