@@ -41,7 +41,7 @@ export const ExportListOut = () => {
 
   const handlSearch = async () => {
     const res = await searchExportList('Out',OrderNo, MaterialNo, Supplier, DateStart, DateEnd)
-    console.log({ res })
+    // console.log({ res })
     setListExport(res)
   }
   const { t } = useTranslation()
@@ -98,10 +98,37 @@ export const ExportListOut = () => {
         }
       })
     })
-
+    const firstRow = worksheet.getRow(1);
+    firstRow.font = {
+      bold: true, // Chữ in đậm
+    };
+    const twoRow = worksheet.getRow(2);
+    twoRow.font = {
+      bold: true, // Chữ in đậm
+    };
+    const threeRow = worksheet.getRow(3);
+    threeRow.font = {
+      bold: true, // Chữ in đậm
+    };
+    threeRow.alignment = {
+      vertical: 'middle', // Canh giữa dọc
+      horizontal: 'center', // Canh giữa ngang
+    };
+    const forRow = worksheet.getRow(4);
+    forRow.font = {
+      bold: true, // Chữ in đậm
+    };
+    forRow.alignment = {
+      vertical: 'middle', // Canh giữa dọc
+      horizontal: 'center', // Canh giữa ngang
+    };
+   
     const lastRow = worksheet.rowCount
     // const lastColumn = worksheet.getColumn('D').number
-
+    const lRow = worksheet.getRow(lastRow);
+    lRow.font = {
+      bold: true, // Chữ in đậm
+    };
     // Kết hợp ô trong phạm vi từ cột A hàng cuối cùng đến cột D hàng cuối cùng
     worksheet.mergeCells(`A1:I1`)
     worksheet.mergeCells(`A2:I2`)
@@ -119,7 +146,14 @@ export const ExportListOut = () => {
     })
   }
 
-
+  const handleReset=()=>{
+    setDateStart(currentDate)
+    setDateEnd(currentDate)
+    setOrderNo('')
+    setListExport([])
+    setMaterialNo('')
+    setSupplier('')
+  }
   return (
     <main className=' flex h-screen flex-col  text-white'>
       <Helmet>
@@ -230,7 +264,7 @@ export const ExportListOut = () => {
               </button>
             </div>
             <div className=' text-left'>
-              <button className='rounded-xl border bg-gray-700 px-3  py-1 text-xs font-bold md:text-sm  lg:text-base'>
+              <button onClick={handleReset} className='rounded-xl border bg-gray-700 px-3  py-1 text-xs font-bold md:text-sm  lg:text-base'>
                 {t('btnRemove')}
               </button>
             </div>

@@ -101,7 +101,7 @@ function StockOutScreens() {
     setModalIsOpen(false)
   }
   const handleChange = async (event: any) => {
-    setLoading(true)
+   
     const chuoi = event.target.value
     setBtnSearch(chuoi)
     handleStockOutAll(chuoi)
@@ -126,14 +126,25 @@ function StockOutScreens() {
       setLoading(false)
     }
   }
-  const HandleTravekho = async (BarCode: string, QTY: number, Print_QTY: string) => {
+  const handleClickChangequantity=(Print_QTY: string)=>{
     const parts = Print_QTY.split('/')
     const quantity = parseInt(parts[1].trim())
     setTotalQuantityFocus(quantity)
+  }
+  const HandleTravekho = async (BarCode: string, QTY: number, Print_QTY: string) => {
+    // const parts = Print_QTY.split('/')
+    // const quantity = parseInt(parts[1].trim())
+    // setTotalQuantityFocus(quantity)
     const confirmed = window.confirm('You want to cancel this item: ' + BarCode)
     if (confirmed) {
       const res = await ReBackstockOutAll(BarCode, User_ID)
-      setTotalQuantity(res)
+      if(res ==="Cập nhật thất bại"){
+        setTotalQuantity(0)
+
+      }else {
+
+        setTotalQuantity(res)
+      }
       setContent((prevData) => prevData.filter((item) => item.BarCode !== BarCode))
     }
   }
@@ -228,6 +239,8 @@ function StockOutScreens() {
         }
       }
     }
+  
+
   }
 
   const handleToggleClickSearch = () => {
@@ -516,7 +529,8 @@ function StockOutScreens() {
                   <tr
                     className='tr-focus:bg-gray-600 cursor-pointer border-b  hover:bg-[#141c30] '
                     key={row.BarCode}
-                    onClick={(BarCode) => HandleTravekho(row.BarCode, row.QTY, row.Print_QTY)}
+                    onDoubleClick={() => HandleTravekho(row.BarCode, row.QTY, row.Print_QTY)}
+                    onClick={() => handleClickChangequantity(row.Print_QTY)}
                   >
                     <td>{row.BarCode}</td>
                     <td>{row.Material_No}</td>

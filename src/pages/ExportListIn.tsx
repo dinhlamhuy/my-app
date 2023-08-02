@@ -116,6 +116,24 @@ export const ExportListIn = () => {
       })
     })
 
+    const firstRow = worksheet.getRow(1);
+    firstRow.font = {
+      bold: true, // Chữ in đậm
+    };
+    firstRow.alignment = {
+      vertical: 'middle', // Canh giữa dọc
+      horizontal: 'center', // Canh giữa ngang
+    };
+    
+    // Định dạng dòng thứ hai (index dòng là 2)
+    const secondRow = worksheet.getRow(2);
+    secondRow.font = {
+      bold: true, // Chữ in đậm
+    };
+    secondRow.alignment = {
+      vertical: 'middle', // Canh giữa dọc
+      horizontal: 'center', // Canh giữa ngang
+    };
     const lastRow = worksheet.rowCount
     const lastColumn = worksheet.getColumn('D').number
 

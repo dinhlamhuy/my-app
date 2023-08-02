@@ -18,6 +18,10 @@ import CustomSidleBar from 'components/CustomSidleBar'
 import StockInScreens from 'pages/StockInScreens'
 import { ExportListIn } from 'pages/ExportListIn'
 
+import Scanmay from 'pages/Scanmay'
+
+
+
 function App() {
   return (
     <div>
@@ -40,6 +44,7 @@ function App() {
           <Route path={'/reportstockin'} element={<ExportListIn />} />
           <Route path={'/CustomSidleBar'} element={<CustomSidleBar />} />
           <Route path={'/modal'} element={<ModalCha />} />
+          <Route path={'/scanmay'} element={<Scanmay />} />
 
         </Routes>
       </BrowserRouter>

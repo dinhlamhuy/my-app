@@ -31,7 +31,7 @@ export default function StockInScreens() {
   const [Content, setContent] = useState<Material_Label_By_Rack[]>([])
   const [newRows, setNewRows] = useState<Material_Label_By_Rack[]>([])
   const [BtnSearch, setBtnSearch] = useState('')
-  const [TotalQuantity, setTotalQuantity] = useState('')
+  const [TotalQuantity, setTotalQuantity] = useState('0')
   const [TotalQuantityRack, setTotalQuantityRack] = useState(0)
   const [TotalRollRack, setTotalRollRack] = useState(0)
   const [TotalRoll, setTotalRoll] = useState(0)
@@ -137,7 +137,7 @@ export default function StockInScreens() {
 
     setLoading(false)
   }
-
+ 
   const HandleOutRack = async (BarCode: string) => {
     // setOutRack(qr)
     const confirmed = window.confirm('You want to cancel this item: ' + BarCode)
